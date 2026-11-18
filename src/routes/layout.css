@@ -14,3 +14,24 @@ html,
 body {
   min-height: 100%;
 }
+
+/* Reserve the scrollbar so opening the inspector never shifts the page. */
+html {
+  scrollbar-gutter: stable;
+}
+
+@layer base {
+  :where(h1, h2, h3, h4) {
+    text-wrap: balance;
+  }
+
+  :where(p) {
+    text-wrap: pretty;
+  }
+
+  /* One consistent keyboard-focus ring for every native control. */
+  :where(a, button, input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--color-sky-500);
+    outline-offset: 2px;
+  }
+}
