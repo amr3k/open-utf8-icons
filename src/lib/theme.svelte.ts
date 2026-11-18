@@ -1,78 +1,78 @@
 import {
-	type ThemeMode,
-	type ResolvedTheme,
-	THEME_STORAGE_KEY,
-	resolveTheme,
-	getNextThemeMode,
-	getThemeIcon
-} from './theme-utils.js';
+  type ThemeMode,
+  type ResolvedTheme,
+  THEME_STORAGE_KEY,
+  resolveTheme,
+  getNextThemeMode,
+  getThemeIcon,
+} from "./theme-utils.js";
 
 export type { ThemeMode, ResolvedTheme };
 export { THEME_STORAGE_KEY, resolveTheme, getNextThemeMode, getThemeIcon };
 
 class ThemeManager {
-	mode = $state<ThemeMode>('system');
-	resolved = $state<ResolvedTheme>('light');
-	private isInitialized = false;
+  mode = $state<ThemeMode>("system");
+  resolved = $state<ResolvedTheme>("light");
+  private isInitialized = false;
 
-	private mediaQuery: MediaQueryList | null = null;
-	private handleMediaChange = (e: MediaQueryListEvent) => {
-		if (this.mode === 'system') {
-			this.applyTheme(resolveTheme('system', e.matches));
-		}
-	};
+  private mediaQuery: MediaQueryList | null = null;
+  private handleMediaChange = (e: MediaQueryListEvent) => {
+    if (this.mode === "system") {
+      this.applyTheme(resolveTheme("system", e.matches));
+    }
+  };
 
-	init() {
-		if (typeof window === 'undefined' || this.isInitialized) return;
+  init() {
+    if (typeof window === "undefined" || this.isInitialized) return;
 
-		this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-		this.mediaQuery.addEventListener('change', this.handleMediaChange);
+    this.mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    this.mediaQuery.addEventListener("change", this.handleMediaChange);
 
-		const stored = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode | null;
-		if (stored === 'light' || stored === 'dark' || stored === 'system') {
-			this.mode = stored;
-		} else {
-			this.mode = 'system';
-		}
+    const stored = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode | null;
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      this.mode = stored;
+    } else {
+      this.mode = "system";
+    }
 
-		this.applyTheme(resolveTheme(this.mode, this.mediaQuery.matches));
-		this.isInitialized = true;
-	}
+    this.applyTheme(resolveTheme(this.mode, this.mediaQuery.matches));
+    this.isInitialized = true;
+  }
 
-	destroy() {
-		if (this.mediaQuery) {
-			this.mediaQuery.removeEventListener('change', this.handleMediaChange);
-			this.mediaQuery = null;
-		}
-		this.isInitialized = false;
-	}
+  destroy() {
+    if (this.mediaQuery) {
+      this.mediaQuery.removeEventListener("change", this.handleMediaChange);
+      this.mediaQuery = null;
+    }
+    this.isInitialized = false;
+  }
 
-	setMode(newMode: ThemeMode) {
-		this.mode = newMode;
-		if (typeof window !== 'undefined') {
-			localStorage.setItem(THEME_STORAGE_KEY, newMode);
-			const systemDark = this.mediaQuery?.matches ?? false;
-			this.applyTheme(resolveTheme(newMode, systemDark));
-		}
-	}
+  setMode(newMode: ThemeMode) {
+    this.mode = newMode;
+    if (typeof window !== "undefined") {
+      localStorage.setItem(THEME_STORAGE_KEY, newMode);
+      const systemDark = this.mediaQuery?.matches ?? false;
+      this.applyTheme(resolveTheme(newMode, systemDark));
+    }
+  }
 
-	toggle() {
-		this.setMode(getNextThemeMode(this.mode));
-	}
+  toggle() {
+    this.setMode(getNextThemeMode(this.mode));
+  }
 
-	private applyTheme(target: ResolvedTheme) {
-		this.resolved = target;
-		if (typeof document === 'undefined') return;
+  private applyTheme(target: ResolvedTheme) {
+    this.resolved = target;
+    if (typeof document === "undefined") return;
 
-		const root = document.documentElement;
-		if (target === 'dark') {
-			root.classList.add('dark');
-			root.style.colorScheme = 'dark';
-		} else {
-			root.classList.remove('dark');
-			root.style.colorScheme = 'light';
-		}
-	}
+    const root = document.documentElement;
+    if (target === "dark") {
+      root.classList.add("dark");
+      root.style.colorScheme = "dark";
+    } else {
+      root.classList.remove("dark");
+      root.style.colorScheme = "light";
+    }
+  }
 }
 
 export const theme = new ThemeManager();
