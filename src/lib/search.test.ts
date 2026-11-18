@@ -30,6 +30,7 @@ function makeGlyph(overrides: Partial<Glyph> = {}): Glyph {
     cssEscape: "\\2605",
     jsEscape: "\\u2605",
     category: "So",
+    script: "Common",
     block: "Miscellaneous Symbols",
     keywords: ["favorite", "star", "bookmark"],
     ...overrides,

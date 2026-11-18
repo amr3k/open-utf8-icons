@@ -1,10 +1,12 @@
 /**
- * UnicodeData.txt parsing and loading for the dataset extraction pipeline.
+ * UCD file parsing and loading for the dataset extraction pipeline.
  *
- * The UCD file (https://www.unicode.org/reports/tr44/#UnicodeData.txt) lists
- * every assigned code point with its official name and general category.
- * It is downloaded once per Unicode version and cached on disk so repeat
- * runs and CI regeneration work offline.
+ * `UnicodeData.txt` (https://www.unicode.org/reports/tr44/#UnicodeData.txt)
+ * lists every assigned code point with its official name and general
+ * category. The generic {@link loadUcdFile} helper also loads the companion
+ * `Scripts.txt` for the script property. Files are downloaded once per
+ * Unicode version and cached on disk so repeat runs and CI regeneration
+ * work offline.
  */
 
 import { mkdirSync } from "node:fs";
@@ -50,7 +52,7 @@ export function parseUnicodeData(text: string): Map<number, UcdEntry> {
 }
 
 export interface LoadUcdOptions {
-  /** Canonical download URL of UnicodeData.txt */
+  /** Canonical download URL of the UCD file */
   url: string;
   /** Local cache path (created on first download) */
   cachePath: string;
@@ -58,16 +60,31 @@ export interface LoadUcdOptions {
   localPath?: string;
   /** Re-download even if the cache exists */
   force?: boolean;
+  /**
+   * Human-readable file name used in errors, e.g. `UnicodeData.txt`.
+   * Defaults to the last URL path segment.
+   */
+  label?: string;
+  /**
+   * Optional sanity check for freshly downloaded content (e.g. reject an
+   * HTML error page that happened to return HTTP 200).
+   */
+  looksValid?: (text: string) => boolean;
 }
 
-/** Load the UCD file from a local file, cache, or download. */
-export async function loadUnicodeData(
-  opts: LoadUcdOptions,
-): Promise<UcdSource> {
+/**
+ * Load a UCD text file from an explicit local path, the on-disk cache, or
+ * the network — in that order. Downloads are cached so repeat runs and CI
+ * regeneration work offline.
+ */
+export async function loadUcdFile(opts: LoadUcdOptions): Promise<UcdSource> {
+  const label =
+    opts.label ?? opts.url.split("/").filter(Boolean).at(-1) ?? "UCD file";
+
   if (opts.localPath) {
     const file = Bun.file(opts.localPath);
     if (!(await file.exists())) {
-      throw new Error(`UCD file not found at ${opts.localPath}`);
+      throw new Error(`${label} not found at ${opts.localPath}`);
     }
     return { text: await file.text(), origin: "file" };
   }
@@ -81,16 +98,24 @@ export async function loadUnicodeData(
   if (!response.ok) {
     throw new Error(
       `Failed to download ${opts.url} (HTTP ${response.status}). ` +
-        `Download it manually and pass --ucd <path>.`,
+        `Download it manually and pass a local path (--ucd or --scripts).`,
     );
   }
   const text = await response.text();
-  if (!text.includes(";")) {
+  const isValid = opts.looksValid ?? ((value: string) => value.includes(";"));
+  if (!isValid(text)) {
     throw new Error(
-      `Downloaded file from ${opts.url} does not look like UnicodeData.txt`,
+      `Downloaded file from ${opts.url} does not look like ${label}`,
     );
   }
   mkdirSync(path.dirname(opts.cachePath), { recursive: true });
   await Bun.write(opts.cachePath, text);
   return { text, origin: "download" };
+}
+
+/** Load `UnicodeData.txt` from a local file, cache, or download. */
+export async function loadUnicodeData(
+  opts: LoadUcdOptions,
+): Promise<UcdSource> {
+  return loadUcdFile({ label: "UnicodeData.txt", ...opts });
 }
