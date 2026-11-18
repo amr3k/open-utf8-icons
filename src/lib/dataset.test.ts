@@ -11,6 +11,8 @@ import {
   countBlocks,
   dataset,
   glyphByCodepoint,
+  glyphByHash,
+  glyphFromHash,
   glyphs,
   searchEntries,
   searchEntryByCodepoint,
@@ -31,6 +33,26 @@ describe("glyphByCodepoint", () => {
     expect(glyphByCodepoint.get("U+2605")?.name).toBe("BLACK STAR");
     expect(glyphByCodepoint.get("U+1F1FA U+1F1F8")?.char).toBe("🇺🇸");
     expect(glyphByCodepoint.get("U+0000")).toBeUndefined();
+  });
+});
+
+describe("glyphByHash", () => {
+  test("resolves every glyph from its permalink fragment", () => {
+    expect(glyphByHash.size).toBe(glyphs.length);
+    expect(glyphFromHash("#U+2605")?.name).toBe("BLACK STAR");
+    expect(glyphFromHash("#U+1F1FA-U+1F1F8")?.char).toBe("🇺🇸");
+  });
+
+  test("normalizes untrusted fragments before lookup", () => {
+    expect(glyphFromHash("#u+2605")).toBe(glyphByCodepoint.get("U+2605"));
+    expect(glyphFromHash("#U%2B2605")).toBe(glyphByCodepoint.get("U+2605"));
+  });
+
+  test("ignores unknown and malformed fragments", () => {
+    expect(glyphFromHash("#U+0000")).toBeUndefined();
+    expect(glyphFromHash("#U+2605<script>")).toBeUndefined();
+    expect(glyphFromHash("#javascript:alert(1)")).toBeUndefined();
+    expect(glyphFromHash("")).toBeUndefined();
   });
 });
 

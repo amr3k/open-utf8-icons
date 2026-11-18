@@ -9,6 +9,7 @@
 
 import iconsJson from "./data/icons.json";
 import type { Glyph, IconsDataset } from "./data/types.js";
+import { glyphHash, parseGlyphHash } from "./permalink.js";
 import { buildSearchEntries, type SearchEntry } from "./search.js";
 
 /** The committed dataset produced by `scripts/generate-icons.ts`. */
@@ -29,6 +30,24 @@ export const searchEntries: readonly SearchEntry[] = buildSearchEntries(
 export const glyphByCodepoint: ReadonlyMap<string, Glyph> = new Map(
   dataset.glyphs.map((glyph) => [glyph.codepoint, glyph]),
 );
+
+/**
+ * URL fragment → glyph lookup for shareable inspector permalinks.
+ * Keys are canonical hashes like `#U+2605` or `#U+1F1FA-U+1F1F8`.
+ */
+export const glyphByHash: ReadonlyMap<string, Glyph> = new Map(
+  dataset.glyphs.map((glyph) => [glyphHash(glyph), glyph]),
+);
+
+/**
+ * Resolve a URL fragment to a dataset glyph. Unknown code points and any
+ * malformed or tampered fragment resolve to `undefined`; callers never need
+ * to handle raw fragment text.
+ */
+export function glyphFromHash(hash: string): Glyph | undefined {
+  const key = parseGlyphHash(hash);
+  return key === null ? undefined : glyphByHash.get(key);
+}
 
 /** Code point label → search entry, used to keep collection ordering. */
 export const searchEntryByCodepoint: ReadonlyMap<string, SearchEntry> = new Map(
