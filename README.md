@@ -56,6 +56,9 @@ bun test
 # Run Svelte type-checking
 bun run check
 
+# Regenerate the Unicode dataset (see below)
+bun run generate:icons
+
 # Build for production (Cloudflare Pages)
 bun run build
 
@@ -65,12 +68,34 @@ bun run preview
 
 ---
 
+## 🗃 Unicode Dataset
+
+The app is powered by a self-contained, pre-generated dataset — [`src/lib/data/icons.json`](src/lib/data/icons.json) — containing **4,021 glyphs** across 22 curated categories, extracted from **Unicode 16.0.0**.
+
+Every glyph ships with full developer metadata: character, official Unicode name, code point (`U+XXXX`), decimal value, HTML entities (decimal + hex), CSS escape, JS escape, Unicode category/block and curated search keywords. Country flags are included as regional-indicator emoji sequences (`🇺🇸`).
+
+### Regenerating the dataset
+
+```bash
+bun run generate:icons                          # use the pinned Unicode version
+bun run generate:icons --force                  # re-download the UCD source file
+bun run generate:icons --unicode 17.0.0         # extract from a newer Unicode version
+bun run generate:icons --ucd ./UnicodeData.txt  # use a local/offline UCD file
+```
+
+- **Source of truth**: the official UCD [`UnicodeData.txt`](https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt) — downloaded once, then cached in `.cache/` (git-ignored), so repeat runs and CI work offline.
+- **Curation**: the curated block list lives in `scripts/lib/blocks.ts`, hand-picked search synonyms in `scripts/lib/keywords.ts`, and flag regions in `scripts/lib/flags.ts`.
+- **Output**: minified JSON (~1.1 MB raw / ~163 kB gzip). The generated file is committed, so production builds and CI never need network access; Cloudflare serves it compressed. If the payload ever grows too large for a single request, per-block chunked loading can be introduced without changing the pipeline.
+- **Invariants**: `bun test` validates the committed dataset against the pure formatter helpers (`scripts/lib/formats.ts`), so representation drift fails CI.
+
+---
+
 ## 📋 Implementation Roadmap
 
 Tracked in epic issue [#1](https://github.com/amr3k/open-utf8-icons/issues/1):
 
 - [x] **Phase 1: Project Scaffolding & Toolchain**
-- [ ] **Phase 2: Unicode Dataset Extraction Pipeline**
+- [x] **Phase 2: Unicode Dataset Extraction Pipeline**
 - [ ] **Phase 3: Core Directory & Search Interface**
 - [ ] **Phase 4: Glyph Inspector & Developer Tooling**
 - [ ] **Phase 5: PWA & Offline Support**

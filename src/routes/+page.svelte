@@ -117,6 +117,50 @@
       </ul>
     </div>
 
+    <!-- Phase 2 status -->
+    <div
+      class="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-6 dark:border-zinc-800 dark:bg-zinc-900/50"
+    >
+      <div
+        class="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-zinc-800"
+      >
+        <div>
+          <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            Phase 2: Unicode Dataset Extraction Pipeline
+          </h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400">
+            Status: Extracted &amp; Committed
+          </p>
+        </div>
+        <span
+          class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400"
+        >
+          <span aria-hidden="true">✓</span> Complete
+        </span>
+      </div>
+
+      <ul
+        class="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 text-xs text-zinc-600 dark:text-zinc-300"
+      >
+        <li class="flex items-center gap-2">
+          <span class="text-emerald-500 font-bold" aria-hidden="true">✓</span>
+          <span>Bun extraction pipeline with cached UCD downloads (Unicode 16.0.0)</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-emerald-500 font-bold" aria-hidden="true">✓</span>
+          <span>4,021 glyphs across 22 curated blocks + 255 flag emoji</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-emerald-500 font-bold" aria-hidden="true">✓</span>
+          <span>Full metadata: codepoint, decimal, HTML/CSS/JS escapes, keywords</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-emerald-500 font-bold" aria-hidden="true">✓</span>
+          <span>Minified payload: ~1.1 MB raw / ~163 kB gzip</span>
+        </li>
+      </ul>
+    </div>
+
     <!-- Sampler of UTF-8 glyphs -->
     <div class="mt-8">
       <h4
