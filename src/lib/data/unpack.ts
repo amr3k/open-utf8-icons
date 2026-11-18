@@ -85,7 +85,8 @@ export function unpackDataset(packed: PackedDataset): IconsDataset {
       char: charFromCodepoints(codepoints),
       name,
       codepoint: formatCodepoints(codepoints),
-      dec: codepoints.length === 1 ? codepoints[0]! : formatDecimals(codepoints),
+      dec:
+        codepoints.length === 1 ? codepoints[0]! : formatDecimals(codepoints),
       hex,
       htmlEntity: formatHtmlEntity(codepoints),
       htmlHex: formatHtmlHex(codepoints),

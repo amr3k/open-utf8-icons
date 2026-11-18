@@ -71,13 +71,13 @@ bun run preview
 
 ## 🗃 Unicode Dataset
 
-The app is powered by a self-contained, pre-generated dataset — [`src/lib/data/icons.json`](src/lib/data/icons.json) — containing **4,021 glyphs** across 22 curated categories, extracted from **Unicode 16.0.0**.
+The app is powered by a self-contained, pre-generated dataset — [`src/lib/data/icons.json`](src/lib/data/icons.json) — containing **3,965 glyphs** across 22 curated categories, extracted from **Unicode 16.0.0**.
 
 Every glyph resolves to full developer metadata: character, official Unicode name, code point (`U+XXXX`), decimal value, HTML entities (decimal + hex), CSS escape, JS escape, Unicode category, script, block and curated search keywords. Country flags are included as regional-indicator emoji sequences (`🇺🇸`).
 
 ### Packed wire format
 
-The committed artifact is a *packed* dataset (schema v2) rather than one object per glyph: it stores one row per glyph (`hex|name|category|script|block|keywords`), keeps block/category/script names in small dictionaries, drops keywords the glyph name already covers, and omits every representation that can be derived from the code points. [`src/lib/data/unpack.ts`](src/lib/data/unpack.ts) expands it once at load, so the browser receives **~164 kB raw / ~40 kB gzip instead of ~1.15 MB** and parses a compact JSON payload instead of a megabyte of JavaScript object literals.
+The committed artifact is a _packed_ dataset (schema v2) rather than one object per glyph: it stores one row per glyph (`hex|name|category|script|block|keywords`), keeps block/category/script names in small dictionaries, drops keywords the glyph name already covers, and omits every representation that can be derived from the code points. [`src/lib/data/unpack.ts`](src/lib/data/unpack.ts) expands it once at load, so the browser receives **~162 kB raw / ~40 kB gzip instead of ~1.14 MB** and parses a compact JSON payload instead of a megabyte of JavaScript object literals.
 
 ### Regenerating the dataset
 
@@ -91,7 +91,7 @@ bun run generate:icons --scripts ./Scripts.txt      # use a local/offline Script
 
 - **Source of truth**: the official UCD [`UnicodeData.txt`](https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt) (names, categories) and [`Scripts.txt`](https://www.unicode.org/Public/16.0.0/ucd/Scripts.txt) (script property) — downloaded once, then cached in `.cache/` (git-ignored), so repeat runs and CI work offline.
 - **Curation**: the curated block list lives in `scripts/lib/blocks.ts`, hand-picked search synonyms in `scripts/lib/keywords.ts`, and flag regions in `scripts/lib/flags.ts`. Script ranges are parsed in `scripts/lib/unicode-scripts.ts`.
-- **Output**: minified packed JSON (~164 kB raw / ~40 kB gzip). The generated file is committed, so production builds and CI never need network access; Cloudflare serves it compressed. The generator prints the expanded-vs-packed saving on every run.
+- **Output**: minified packed JSON (~162 kB raw / ~40 kB gzip). The generated file is committed, so production builds and CI never need network access; Cloudflare serves it compressed. The generator prints the expanded-vs-packed saving on every run.
 - **Invariants**: `bun test` validates the committed artifact end to end — it decodes the packed rows, checks dictionary indexes, and re-derives every developer representation with the pure helpers in [`src/lib/data/derive.ts`](src/lib/data/derive.ts), so representation drift fails CI.
 
 ---
@@ -100,7 +100,7 @@ bun run generate:icons --scripts ./Scripts.txt      # use a local/offline Script
 
 The homepage is a fully offline, client-side directory over the dataset — no network calls, no search index downloads.
 
-- **Instant search** (pure `src/lib/search.ts`, zero dependencies): exact glyph / name / word / keyword matches, name & keyword prefixes and substrings, code point lookups in every notation (`u+2605`, `0x2605`, `2605`, `9733`), code point prefixes, and greedy fuzzy subsequences over names **and keywords** (word-start and prefix-anchored matches score highest). Equal scores prefer shorter, more canonical names. The per-glyph index is built lazily on the first keystroke, so the initial page load never pays for it; warm cost over the full 4,021-glyph index is **2–6 ms per keystroke**.
+- **Instant search** (pure `src/lib/search.ts`, zero dependencies): exact glyph / name / word / keyword matches, name & keyword prefixes and substrings, code point lookups in every notation (`u+2605`, `0x2605`, `2605`, `9733`), code point prefixes, and greedy fuzzy subsequences over names **and keywords** (word-start and prefix-anchored matches score highest). Equal scores prefer shorter, more canonical names. The per-glyph index is built lazily on the first keystroke, so the initial page load never pays for it; warm cost over the full 3,965-glyph index is **2–6 ms per keystroke**.
 - **Keyboard shortcuts**: `/` focuses the search field from anywhere, `Esc` clears it from anywhere (or blurs when already empty).
 - **Category browser**: horizontally scrollable block chips with live counts; the filter composes with search.
 - **Windowed grid**: cards render in 48-glyph pages, grown by an IntersectionObserver sentinel as you scroll, and each card uses `content-visibility: auto` so off-screen tiles skip painting entirely — smooth scrolling with zero virtualization dependencies. Every match stays reachable — no result truncation.

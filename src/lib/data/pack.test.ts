@@ -94,9 +94,7 @@ describe("packDataset", () => {
     expect(rows).toHaveLength(3);
     expect(rows[0]).toBe("2605|BLACK STAR|0|0|0|favorite,bookmark");
     expect(rows[1]).toBe("24|DOLLAR SIGN|1|0|1|money,price");
-    expect(rows[2]).toBe(
-      "1f1ff 1f1fc|FLAG OF ZIMBABWE|0|0|2|zw,cabo verde",
-    );
+    expect(rows[2]).toBe("1f1ff 1f1fc|FLAG OF ZIMBABWE|0|0|2|zw,cabo verde");
   });
 
   test("rejects values that would break the separators", () => {
@@ -138,9 +136,9 @@ describe("unpackDataset", () => {
   });
 
   test("rejects truncated artifacts", () => {
-    expect(() =>
-      unpackDataset({ ...packed, count: packed.count + 1 }),
-    ).toThrow(/decoded 3 glyphs/);
+    expect(() => unpackDataset({ ...packed, count: packed.count + 1 })).toThrow(
+      /decoded 3 glyphs/,
+    );
   });
 
   test("rejects unknown schema versions", () => {

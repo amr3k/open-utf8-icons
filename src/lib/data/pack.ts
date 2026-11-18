@@ -108,8 +108,8 @@ export function packDataset(dataset: IconsDataset): PackedDataset {
     blocks: [...dictionaries.blocks.keys()],
     categories: [...dictionaries.categories.keys()],
     scripts: [...dictionaries.scripts.keys()],
-    rows: dataset.glyphs.map((glyph) => packRow(glyph, dictionaries)).join(
-      ROW_SEPARATOR,
-    ),
+    rows: dataset.glyphs
+      .map((glyph) => packRow(glyph, dictionaries))
+      .join(ROW_SEPARATOR),
   };
 }

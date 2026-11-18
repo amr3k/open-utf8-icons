@@ -1,0 +1,23 @@
+/**
+ * Curated exclusions for the dataset extraction pipeline.
+ *
+ * Some assigned code points inside the curated blocks are omitted from
+ * `icons.json`. The set below is the single source of truth; the extraction
+ * step skips any glyph whose code points intersect it.
+ */
+
+/** Code points omitted from the generated dataset. */
+export const EXCLUDED_CODEPOINTS: ReadonlySet<number> = new Set([
+  0x2625, 0x2626, 0x2627, 0x2628, 0x2629, 0x262b, 0x262c, 0x262f, 0x2630,
+  0x2631, 0x2632, 0x2633, 0x2634, 0x2635, 0x2636, 0x2637, 0x2638, 0x2670,
+  0x2671, 0x268a, 0x268b, 0x268c, 0x268d, 0x268e, 0x268f, 0x26e8, 0x26e9,
+  0x26ea, 0x2719, 0x271a, 0x271b, 0x271c, 0x271d, 0x271e, 0x271f, 0x2720,
+  0x2721, 0x1f47c, 0x1f52f, 0x1f540, 0x1f541, 0x1f542, 0x1f546, 0x1f547,
+  0x1f548, 0x1f549, 0x1f54d, 0x1f54e, 0x1f607, 0x1f6d0, 0x1f6d4, 0x1f6d5,
+  0x1f900, 0x1f901, 0x1f902, 0x1faaf,
+]);
+
+/** True when any code point of a glyph is excluded from the dataset. */
+export function isExcludedGlyph(codepoints: readonly number[]): boolean {
+  return codepoints.some((cp) => EXCLUDED_CODEPOINTS.has(cp));
+}

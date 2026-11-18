@@ -20,6 +20,7 @@ import {
   toHex,
 } from "../../../scripts/lib/formats.js";
 import { MAX_KEYWORDS } from "../../../scripts/lib/keywords.js";
+import { EXCLUDED_CODEPOINTS } from "../../../scripts/lib/curation.js";
 import packed from "./icons.json";
 import type { Glyph } from "./types.js";
 import { CATEGORY_LABELS, PACKED_VERSION } from "./types.js";
@@ -63,7 +64,8 @@ function glyphIssues(glyph: Glyph): string[] {
   if (glyph.htmlEntity !== formatHtmlEntity(codepoints))
     push("htmlEntity mismatch");
   if (glyph.htmlHex !== formatHtmlHex(codepoints)) push("htmlHex mismatch");
-  if (glyph.cssEscape !== formatCssEscape(codepoints)) push("cssEscape mismatch");
+  if (glyph.cssEscape !== formatCssEscape(codepoints))
+    push("cssEscape mismatch");
   if (glyph.jsEscape !== formatJsEscape(codepoints)) push("jsEscape mismatch");
 
   if (typeof category !== "string" || CATEGORY_LABELS[category] === undefined) {
@@ -164,6 +166,20 @@ describe("committed dataset (src/lib/data/icons.json)", () => {
         values.length,
       );
       expect(values.length, `${label} is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  test("honours the curated exclusions", async () => {
+    const dataset = unpackDataset(packed);
+    const present = new Set(dataset.glyphs.map((glyph) => glyph.codepoint));
+
+    for (const cp of EXCLUDED_CODEPOINTS) {
+      const label = `U+${cp.toString(16).toUpperCase()}`;
+      expect(present.has(label), `excluded glyph ${label} leaked`).toBe(false);
+    }
+
+    for (const label of ["U+262A", "U+1F54B", "U+1F54C"]) {
+      expect(present.has(label), `missing glyph ${label}`).toBe(true);
     }
   });
 
