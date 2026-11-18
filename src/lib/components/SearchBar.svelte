@@ -1,8 +1,9 @@
 <script lang="ts">
   /**
    * Instant search input (Phase 3): `/` focuses from anywhere, `Esc` clears
-   * from anywhere, ✕ gives a touch-friendly clear. Also hosts the quick-copy
-   * format pills and a live tabular-nums match count.
+   * from anywhere outside a modal dialog, ✕ gives a touch-friendly clear.
+   * Also hosts the quick-copy format pills and a live tabular-nums match
+   * count.
    */
   import { COPY_FORMATS, type CopyFormat } from "#lib/copy.js";
   import { formatCount } from "#lib/format.js";
@@ -37,14 +38,21 @@
 
   /**
    * Window-level shortcuts: `/` focuses the field (unless the user is
-   * already typing somewhere), `Esc` clears the query from anywhere —
-   * including after clicking a glyph or a filter chip.
+   * already typing somewhere), `Esc` clears the query — including after
+   * clicking a glyph or a filter chip. Both are suspended whenever a modal
+   * dialog owns the keyboard.
    */
   function handleShortcut(event: KeyboardEvent) {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
 
+    const target = event.target;
+    // A modal dialog (the glyph inspector) owns the keyboard: Esc must close
+    // the panel instead of clearing the search behind it.
+    if (target instanceof Element && target.closest("dialog[open]") !== null) {
+      return;
+    }
+
     if (event.key === "/") {
-      const target = event.target;
       if (
         target instanceof HTMLElement &&
         (target.isContentEditable ||
