@@ -41,6 +41,10 @@
    */
   let hydrated = $state(false);
 
+  const currentHash = $derived(
+    page.shallow !== null ? page.shallow.url.hash : page.url.hash,
+  );
+
   /**
    * Glyph shown in the inspector drawer. The URL fragment is the single
    * source of truth: opening and closing are shallow SvelteKit navigations,
@@ -48,7 +52,7 @@
    * and a shared permalink opens the same drawer on load.
    */
   const selected = $derived(
-    hydrated ? (glyphFromHash(page.url.hash) ?? null) : null,
+    hydrated ? (glyphFromHash(currentHash) ?? null) : null,
   );
 
   onMount(() => {
@@ -150,7 +154,7 @@
    */
   function inspectGlyph(glyph: Glyph) {
     const hash = glyphHash(glyph);
-    if (page.url.hash === hash) return;
+    if (currentHash === hash) return;
     void goto(hash, { state: page.state, shallow: true });
   }
 
@@ -159,7 +163,7 @@
    * the drawer never comes back on Back.
    */
   function closeInspector() {
-    if (page.url.hash === "") return;
+    if (currentHash === "") return;
     void goto(`${page.url.pathname}${page.url.search}`, {
       state: page.state,
       shallow: true,
