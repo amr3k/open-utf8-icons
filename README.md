@@ -27,6 +27,7 @@ Hosted at: **[utf8.a3k.me](https://utf8.a3k.me)**
 - **Framework**: [SvelteKit](https://svelte.dev) with **Svelte 5 Runes** (`$state`, `$derived`, `$props`, `$effect`)
 - **Deployment**: Cloudflare Pages / Workers via [`@sveltejs/adapter-cloudflare`](https://github.com/sveltejs/kit/tree/main/packages/adapter-cloudflare)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com) with `@tailwindcss/vite`
+- **PWA**: Hand-rolled service worker + web app manifest — no Workbox or PWA plugin
 - **Testing**: Built-in `bun test`
 
 ---
@@ -116,6 +117,18 @@ Clicking any glyph opens an accessible slide-over inspector (native `<dialog>` �
 
 ---
 
+## 📲 PWA & Offline Support
+
+`utf8.a3k.me` installs as a Progressive Web App and keeps working when the network does not — all without a PWA plugin or extra runtime dependencies.
+
+- **Manifest**: [`static/manifest.webmanifest`](static/manifest.webmanifest) declares `open-utf8-icons`, a `/` scope, standalone display, categories, theme colors and 192/512 px any + maskable icons (plus a 180 px `apple-touch-icon`), all rendered from the `ツ` brand mark.
+- **Service worker** ([`src/service-worker/index.ts`](src/service-worker/index.ts), strategies in [`src/lib/sw-policy.ts`](src/lib/sw-policy.ts)): on install it precaches the app shell, every static asset (manifest, icons, favicon) and the immutable JS bundle — which already contains the full Unicode dataset, so offline search needs no extra request. Immutable build output is cache-first, navigations are network-first with the cached shell as fallback, and other same-origin GETs revalidate in the background. Each deployment gets a versioned cache; older caches are pruned on activation. The worker is disabled during `vite dev` so HMR stays fresh.
+- **Offline fallback**: a prerendered `/offline` page is precached and served for navigations that have no cached page, with a retry action. An unobtrusive status pill appears while `navigator.onLine` is false, confirming that search, inspection and copying still work.
+- **Install prompt**: Chromium's `beforeinstallprompt` is captured and surfaced as a small, dismissible inline banner; iOS gets the equivalent Share → Add to Home Screen hint. Dismissals are remembered in `localStorage` (`utf8:install-dismissed`), and the banner never appears in standalone mode.
+- **Theme-aware chrome**: `theme-color` follows the resolved light/dark theme (including manual overrides), so the mobile status bar matches the app surface.
+
+---
+
 ## 📋 Implementation Roadmap
 
 Tracked in epic issue [#1](https://github.com/amr3k/open-utf8-icons/issues/1):
@@ -124,7 +137,7 @@ Tracked in epic issue [#1](https://github.com/amr3k/open-utf8-icons/issues/1):
 - [x] **Phase 2: Unicode Dataset Extraction Pipeline**
 - [x] **Phase 3: Core Directory & Search Interface**
 - [x] **Phase 4: Glyph Inspector & Developer Tooling**
-- [ ] **Phase 5: PWA & Offline Support**
+- [x] **Phase 5: PWA & Offline Support**
 - [ ] **Phase 6: Branding, SEO & Social Assets**
 - [ ] **Phase 7: Deployment & CI/CD**
 
