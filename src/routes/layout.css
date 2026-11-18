@@ -61,6 +61,11 @@ html {
   .rise-in {
     animation: rise-in 320ms var(--ease-out-expo) backwards;
   }
+
+  /* The inspector paints its own animated scrim instead of the UA backdrop. */
+  dialog::backdrop {
+    background: transparent;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
