@@ -3,12 +3,10 @@ import {
   type ResolvedTheme,
   THEME_STORAGE_KEY,
   resolveTheme,
-  getNextThemeMode,
-  getThemeIcon,
 } from "./theme-utils.js";
 
 export type { ThemeMode, ResolvedTheme };
-export { THEME_STORAGE_KEY, resolveTheme, getNextThemeMode, getThemeIcon };
+export { THEME_STORAGE_KEY, resolveTheme };
 
 class ThemeManager {
   mode = $state<ThemeMode>("system");
@@ -54,10 +52,6 @@ class ThemeManager {
       const systemDark = this.mediaQuery?.matches ?? false;
       this.applyTheme(resolveTheme(newMode, systemDark));
     }
-  }
-
-  toggle() {
-    this.setMode(getNextThemeMode(this.mode));
   }
 
   private applyTheme(target: ResolvedTheme) {

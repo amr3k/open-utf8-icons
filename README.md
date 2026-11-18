@@ -90,13 +90,25 @@ bun run generate:icons --ucd ./UnicodeData.txt  # use a local/offline UCD file
 
 ---
 
+## 🔎 Core Directory & Search
+
+The homepage is a fully offline, client-side directory over the dataset — no network calls, no search index downloads.
+
+- **Instant search** (pure `src/lib/search.ts`, zero dependencies): exact glyph / name / word / keyword matches, name & keyword prefixes and substrings, code point lookups in every notation (`u+2605`, `0x2605`, `2605`, `9733`), code point prefixes, and greedy fuzzy subsequences over names **and keywords** (word-start and prefix-anchored matches score highest). Equal scores prefer shorter, more canonical names. Warm cost over the full 4,021-glyph index: **2–6 ms per keystroke**.
+- **Keyboard shortcuts**: `/` focuses the search field from anywhere, `Esc` clears it from anywhere (or blurs when already empty).
+- **Category browser**: horizontally scrollable block chips with live counts; the filter composes with search.
+- **Windowed grid**: cards render in 96-glyph pages, grown by an IntersectionObserver sentinel as you scroll, and each card uses `content-visibility: auto` so off-screen tiles skip painting entirely — smooth scrolling with zero virtualization dependencies. Every match stays reachable — no result truncation.
+- **Quick copy**: one click on any glyph copies it in the selected format (Char / HTML / CSS / `U+`), confirmed by a toast — Web Clipboard API with a legacy `execCommand` fallback.
+
+---
+
 ## 📋 Implementation Roadmap
 
 Tracked in epic issue [#1](https://github.com/amr3k/open-utf8-icons/issues/1):
 
 - [x] **Phase 1: Project Scaffolding & Toolchain**
 - [x] **Phase 2: Unicode Dataset Extraction Pipeline**
-- [ ] **Phase 3: Core Directory & Search Interface**
+- [x] **Phase 3: Core Directory & Search Interface**
 - [ ] **Phase 4: Glyph Inspector & Developer Tooling**
 - [ ] **Phase 5: PWA & Offline Support**
 - [ ] **Phase 6: Branding, SEO & Social Assets**
