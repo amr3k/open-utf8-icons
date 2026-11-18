@@ -2,6 +2,7 @@ import {
   type ThemeMode,
   type ResolvedTheme,
   THEME_STORAGE_KEY,
+  getThemeColor,
   resolveTheme,
 } from "./theme-utils.js";
 
@@ -66,6 +67,11 @@ class ThemeManager {
       root.classList.remove("dark");
       root.style.colorScheme = "light";
     }
+
+    // Keep mobile browser chrome and Safari's tab bar in step with the app.
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", getThemeColor(target));
   }
 }
 

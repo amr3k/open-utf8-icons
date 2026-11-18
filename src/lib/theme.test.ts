@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { resolveTheme, getNextThemeMode, getThemeIcon } from "./theme-utils.js";
+import {
+  getNextThemeMode,
+  getThemeColor,
+  getThemeIcon,
+  resolveTheme,
+  THEME_COLORS,
+} from "./theme-utils.js";
 
 describe("theme utilities", () => {
   test("resolveTheme resolves explicit light and dark modes regardless of system preference", () => {
@@ -26,5 +32,17 @@ describe("theme utilities", () => {
     expect(getThemeIcon("light")).toBe("☀");
     expect(getThemeIcon("dark")).toBe("☾");
     expect(getThemeIcon("system")).toBe("◑");
+  });
+
+  test("getThemeColor matches the document surfaces", () => {
+    expect(getThemeColor("light")).toBe("#ffffff");
+    expect(getThemeColor("dark")).toBe("#09090b");
+    expect(THEME_COLORS).toEqual({ light: "#ffffff", dark: "#09090b" });
+  });
+
+  test("the pre-hydration bootstrap knows both theme colors", async () => {
+    const html = await Bun.file("src/app.html").text();
+    expect(html).toContain(`content="${THEME_COLORS.light}"`);
+    expect(html).toContain(`"${THEME_COLORS.dark}"`);
   });
 });

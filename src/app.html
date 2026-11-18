@@ -3,17 +3,38 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="open-utf8-icons — High-performance, ad-free web directory for discovering, previewing, and copying native UTF-8 and Unicode glyphs."
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="application-name" content="open-utf8-icons" />
+    <link
+      rel="icon"
+      href="%sveltekit.assets%/favicon.ico"
+      sizes="16x16 32x32 48x48"
     />
-    <title>open-utf8-icons — Discover & Copy UTF-8 Unicode Glyphs</title>
-    <link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      sizes="any"
+      href="%sveltekit.assets%/favicon.svg"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="%sveltekit.assets%/favicon-32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="%sveltekit.assets%/favicon-16.png"
+    />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
       href="%sveltekit.assets%/icons/apple-touch-icon.png"
     />
+    <link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="utf8 icons" />
@@ -44,6 +65,12 @@
           } else {
             document.documentElement.classList.remove("dark");
             document.documentElement.style.colorScheme = "light";
+          }
+          // Paint the browser chrome in the resolved theme before first paint;
+          // the runtime manager updates it again when the mode changes.
+          var themeColor = document.querySelector('meta[name="theme-color"]');
+          if (themeColor) {
+            themeColor.setAttribute("content", isDark ? "#09090b" : "#ffffff");
           }
         } catch (_) {}
       })();
