@@ -7,10 +7,6 @@
    * Share → Add to Home Screen hint. Every icon is a native UTF-8 glyph.
    */
   import { pwa } from "#lib/pwa.svelte.js";
-
-  function install() {
-    void pwa.install();
-  }
 </script>
 
 {#if pwa.banner}
@@ -45,7 +41,7 @@
         {#if pwa.canPrompt}
           <button
             type="button"
-            onclick={install}
+            onclick={() => void pwa.install()}
             title="Install open-utf8-icons"
             class="inline-flex h-8 items-center gap-1.5 rounded-full bg-sky-600 px-3 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-sky-500 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-sky-50 focus-visible:outline-none active:scale-[0.96] dark:bg-sky-500 dark:text-sky-950 dark:hover:bg-sky-400 dark:focus-visible:ring-offset-sky-950"
           >

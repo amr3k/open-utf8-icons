@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     sveltekit({
+      // Root-relative asset URLs keep the prerendered /offline fallback usable
+      // when the worker serves it for a nested navigation path.
+      paths: { relative: false },
       compilerOptions: {
         // Force runes mode for the project, except for libraries. Can be removed in svelte 6.
         runes: ({ filename }) =>

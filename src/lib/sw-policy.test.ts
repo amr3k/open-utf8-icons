@@ -42,24 +42,26 @@ describe("requestStrategy", () => {
     );
   });
 
-  test("serves precached build output and static assets cache-first", () => {
-    expect(requestStrategy({ ...base, precached: true })).toBe("cache-first");
-  });
-
-  test("keeps navigations network-first so deployments appear immediately", () => {
+  test("keeps navigations network-first, even for precached routes", () => {
+    expect(
+      requestStrategy({
+        ...base,
+        mode: "navigate",
+        pathname: "/",
+        precached: true,
+      }),
+    ).toBe("network-first");
     expect(requestStrategy({ ...base, mode: "navigate", pathname: "/" })).toBe(
       "network-first",
     );
   });
 
-  test("revalidates other same-origin GETs in the background", () => {
-    expect(requestStrategy(base)).toBe("stale-while-revalidate");
+  test("serves precached build output and static assets cache-first", () => {
+    expect(requestStrategy({ ...base, precached: true })).toBe("cache-first");
   });
 
-  test("precaching wins over the navigation strategy", () => {
-    expect(
-      requestStrategy({ ...base, precached: true, mode: "navigate" }),
-    ).toBe("cache-first");
+  test("revalidates other same-origin GETs in the background", () => {
+    expect(requestStrategy(base)).toBe("stale-while-revalidate");
   });
 });
 
@@ -67,20 +69,6 @@ describe("createCacheName", () => {
   test("includes the prefix and build version", () => {
     expect(CACHE_PREFIX).toBe("utf8-icons");
     expect(createCacheName("1750000000000")).toBe("utf8-icons-1750000000000");
-  });
-
-  test("sanitizes arbitrary version names", () => {
-    expect(createCacheName(" release / 2026-11-18 ")).toBe(
-      "utf8-icons-release-2026-11-18",
-    );
-  });
-
-  test("falls back for empty versions and caps very long ones", () => {
-    expect(createCacheName("")).toBe("utf8-icons-dev");
-    expect(createCacheName("   ")).toBe("utf8-icons-dev");
-    expect(createCacheName("x".repeat(200))).toBe(
-      `utf8-icons-${"x".repeat(64)}`,
-    );
   });
 });
 

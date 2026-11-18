@@ -24,6 +24,11 @@ declare global {
     appinstalled: Event;
   }
 
+  interface Window {
+    /** Captured by the inline bootstrap in `app.html` before hydration. */
+    __utf8IconsInstallPrompt?: BeforeInstallPromptEvent;
+  }
+
   interface Navigator {
     /** Safari's legacy iOS standalone flag. */
     readonly standalone?: boolean;

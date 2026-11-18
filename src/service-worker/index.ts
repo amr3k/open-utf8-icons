@@ -39,7 +39,7 @@ function buildPath(path: string): string {
 }
 
 /** Everything fetched once during install, deduplicated and prefixed. */
-const PRECACHE: string[] = [
+const PRECACHE_URLS: string[] = [
   ...new Set<string>([
     ...immutable.map((entry) => buildPath(entry.path)),
     ...assets.map((entry) => asset(entry.path)),
@@ -48,7 +48,7 @@ const PRECACHE: string[] = [
     OFFLINE_PATH,
   ]),
 ];
-const PRECACHED: ReadonlySet<string> = new Set(PRECACHE);
+const PRECACHED_URLS: ReadonlySet<string> = new Set(PRECACHE_URLS);
 
 self.addEventListener("install", (event) => {
   if (dev) return;
@@ -56,7 +56,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      await cache.addAll(PRECACHE);
+      await cache.addAll(PRECACHE_URLS);
     })(),
   );
 });
@@ -86,27 +86,30 @@ self.addEventListener("fetch", (event) => {
     mode: request.mode,
     sameOrigin: url.origin === self.location.origin,
     pathname: url.pathname,
-    precached: PRECACHED.has(url.pathname),
+    precached: PRECACHED_URLS.has(url.pathname),
   });
 
   if (strategy === "network-only") return;
   event.respondWith(respond(event, request, strategy));
 });
 
-/** Apply one caching strategy to a request. */
-async function respond(
+/** Strategies that read or write Cache Storage. */
+type CachedStrategy = Exclude<FetchStrategy, "network-only">;
+
+type CacheResponder = (
   event: FetchEvent,
   request: Request,
-  strategy: FetchStrategy,
-): Promise<Response> {
-  const cache = await caches.open(CACHE_NAME);
+  cache: Cache,
+) => Promise<Response>;
 
-  if (strategy === "cache-first") {
+/** One handler per cached strategy, looked up once per request. */
+const RESPONDERS: Record<CachedStrategy, CacheResponder> = {
+  "cache-first": async (_event, request, cache) => {
     const cached = await cache.match(request, { ignoreSearch: true });
     return cached ?? fetchAndCache(cache, request);
-  }
+  },
 
-  if (strategy === "network-first") {
+  "network-first": async (_event, request, cache) => {
     try {
       return await fetchAndCache(cache, request);
     } catch (error) {
@@ -117,16 +120,28 @@ async function respond(
       if (fallback) return fallback;
       throw error;
     }
-  }
+  },
 
   // Stale-while-revalidate: answer from cache immediately, refresh quietly.
-  const cached = await cache.match(request, { ignoreSearch: true });
-  const revalidation = fetchAndCache(cache, request);
-  if (cached) {
-    event.waitUntil(revalidation.catch(() => undefined));
-    return cached;
-  }
-  return revalidation;
+  "stale-while-revalidate": async (event, request, cache) => {
+    const cached = await cache.match(request, { ignoreSearch: true });
+    const revalidation = fetchAndCache(cache, request);
+    if (cached) {
+      event.waitUntil(revalidation.catch(() => undefined));
+      return cached;
+    }
+    return revalidation;
+  },
+};
+
+/** Apply one caching strategy to a request. */
+async function respond(
+  event: FetchEvent,
+  request: Request,
+  strategy: CachedStrategy,
+): Promise<Response> {
+  const cache = await caches.open(CACHE_NAME);
+  return RESPONDERS[strategy](event, request, cache);
 }
 
 /** Fetch a request and keep a copy when the response allows it. */

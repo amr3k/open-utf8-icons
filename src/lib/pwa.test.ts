@@ -9,8 +9,7 @@ import { describe, expect, test } from "bun:test";
 import {
   INSTALL_DISMISSED_KEY,
   isIosDevice,
-  isStandalone,
-  parseInstallDismissed,
+  isShellCached,
   shouldOfferInstall,
 } from "./pwa.js";
 
@@ -25,26 +24,9 @@ const ANDROID_UA =
 const WINDOWS_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
-describe("parseInstallDismissed", () => {
-  test("only treats the explicit flag as dismissed", () => {
-    expect(parseInstallDismissed("1")).toBe(true);
-    expect(parseInstallDismissed(null)).toBe(false);
-    expect(parseInstallDismissed("0")).toBe(false);
-    expect(parseInstallDismissed("true")).toBe(false);
-    expect(parseInstallDismissed("")).toBe(false);
-  });
-
+describe("install dismissal storage", () => {
   test("uses a namespaced storage key", () => {
     expect(INSTALL_DISMISSED_KEY).toBe("utf8:install-dismissed");
-  });
-});
-
-describe("isStandalone", () => {
-  test("is true when either display mode or Safari standalone reports installed", () => {
-    expect(isStandalone(true, false)).toBe(true);
-    expect(isStandalone(false, true)).toBe(true);
-    expect(isStandalone(true, true)).toBe(true);
-    expect(isStandalone(false, false)).toBe(false);
   });
 });
 
@@ -71,12 +53,22 @@ describe("shouldOfferInstall", () => {
     ios: false,
     dismissed: false,
     installed: false,
+    mobile: true,
   };
 
   test("requires a prompt event or the iOS hint", () => {
     expect(shouldOfferInstall(base)).toBe(false);
     expect(shouldOfferInstall({ ...base, canPrompt: true })).toBe(true);
     expect(shouldOfferInstall({ ...base, ios: true })).toBe(true);
+  });
+
+  test("only offers installation on mobile surfaces", () => {
+    expect(
+      shouldOfferInstall({ ...base, canPrompt: true, mobile: false }),
+    ).toBe(false);
+    expect(shouldOfferInstall({ ...base, ios: true, mobile: false })).toBe(
+      false,
+    );
   });
 
   test("never offers install after dismissal or installation", () => {
@@ -92,5 +84,11 @@ describe("shouldOfferInstall", () => {
     expect(shouldOfferInstall({ ...base, ios: true, installed: true })).toBe(
       false,
     );
+  });
+});
+
+describe("isShellCached", () => {
+  test("reports false when Cache Storage is unavailable", async () => {
+    expect(await isShellCached()).toBe(false);
   });
 });

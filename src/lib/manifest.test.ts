@@ -36,13 +36,13 @@ describe("PWA manifest", () => {
     expect(manifest["id"]).toBe("/");
     expect(manifest["name"]).toBe("open-utf8-icons");
     expect(manifest["short_name"]).toBe("utf8 icons");
-    expect(manifest["start_url"]).toBe("/?source=pwa");
+    expect(manifest["start_url"]).toBe("/");
     expect(manifest["scope"]).toBe("/");
     expect(manifest["display"]).toBe("standalone");
     expect(manifest["lang"]).toBe("en");
     expect(manifest["dir"]).toBe("ltr");
-    expect(manifest["theme_color"]).toMatch(/^#[0-9a-f]{6}$/i);
-    expect(manifest["background_color"]).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(manifest["theme_color"]).toBe("#ffffff");
+    expect(manifest["background_color"]).toBe("#ffffff");
   });
 
   test("declares 192px and 512px any and maskable icons", async () => {
@@ -81,13 +81,18 @@ describe("PWA manifest", () => {
 });
 
 describe("app.html PWA wiring", () => {
-  test("links the manifest, Apple touch icon, and theme color", async () => {
+  test("links the manifest and Apple touch icon", async () => {
     const html = await Bun.file(APP_TEMPLATE_PATH).text();
     expect(html).toContain('rel="manifest"');
     expect(html).toContain("manifest.webmanifest");
     expect(html).toContain('rel="apple-touch-icon"');
     expect(html).toContain("icons/apple-touch-icon.png");
-    expect(html).toContain('name="theme-color"');
+  });
+
+  test("captures beforeinstallprompt before hydration", async () => {
+    const html = await Bun.file(APP_TEMPLATE_PATH).text();
+    expect(html).toContain("beforeinstallprompt");
+    expect(html).toContain("__utf8IconsInstallPrompt");
   });
 
   test("Apple touch icon exists and is a valid PNG", async () => {

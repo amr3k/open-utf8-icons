@@ -14,11 +14,20 @@
       sizes="180x180"
       href="%sveltekit.assets%/icons/apple-touch-icon.png"
     />
-    <meta name="theme-color" content="#ffffff" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="utf8 icons" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <script>
+      // Capture the one-shot install event before hydration so the mobile
+      // banner can still be offered when it fires while modules are loading.
+      // Leave desktop Chromium's own install UI alone.
+      window.addEventListener("beforeinstallprompt", function (event) {
+        if (!window.matchMedia("(pointer: coarse)").matches) return;
+        event.preventDefault();
+        window.__utf8IconsInstallPrompt = event;
+      });
+    </script>
     <script>
       (function () {
         try {
@@ -35,13 +44,6 @@
           } else {
             document.documentElement.classList.remove("dark");
             document.documentElement.style.colorScheme = "light";
-          }
-          // Keep the browser chrome in step with the resolved theme. The
-          // runtime manager (src/lib/theme.svelte.ts) updates this again after
-          // hydration when the user switches modes.
-          var themeColor = document.querySelector('meta[name="theme-color"]');
-          if (themeColor) {
-            themeColor.setAttribute("content", isDark ? "#09090b" : "#ffffff");
           }
         } catch (_) {}
       })();
