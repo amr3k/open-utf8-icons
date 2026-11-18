@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-  <title>Offline — open-utf8-icons</title>
+  <title>Offline — Open UTF-8 icons</title>
   <meta name="robots" content="noindex" />
 </svelte:head>
 
@@ -62,7 +62,7 @@
     <p
       class="mt-6 border-t border-zinc-100 pt-4 text-xs leading-relaxed text-zinc-400 dark:border-zinc-800 dark:text-zinc-500"
     >
-      Tip: install open-utf8-icons from your browser menu — or tap Share then
+      Tip: install Open UTF-8 icons from your browser menu — or tap Share then
       Add to Home Screen on iOS — so the directory stays one tap away next time.
     </p>
   </div>

@@ -8,13 +8,13 @@
 /** Production origin, without a trailing slash. */
 export const SITE_URL = "https://utf8.a3k.me";
 
-export const SITE_NAME = "open-utf8-icons";
+export const SITE_NAME = "Open UTF-8 icons";
 
 export const SITE_TITLE =
-  "open-utf8-icons — Discover & Copy UTF-8 Unicode Glyphs";
+  "Open UTF-8 icons — Discover & Copy UTF-8 Unicode Glyphs";
 
 export const SITE_DESCRIPTION =
-  "open-utf8-icons — High-performance, ad-free web directory for discovering, previewing, and copying native UTF-8 and Unicode glyphs.";
+  "Open UTF-8 icons — High-performance, ad-free web directory for discovering, previewing, and copying native UTF-8 and Unicode glyphs.";
 
 /** Social preview shipped as a static 1200×630 PNG. */
 export interface OgImage {
@@ -28,7 +28,7 @@ export const OG_IMAGE: OgImage = {
   path: "/og-image.png",
   width: 1200,
   height: 630,
-  alt: "open-utf8-icons brand mark and a grid of Unicode glyphs above the URL utf8.a3k.me",
+  alt: "Open UTF-8 icons brand mark and a grid of Unicode glyphs above the URL utf8.a3k.me",
 };
 
 /** Resolve a root-relative path against the production origin. */

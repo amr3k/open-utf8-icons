@@ -3,8 +3,7 @@
 >
   <div class="mx-auto max-w-7xl px-4">
     <p>
-      open-utf8-icons — Crafted with native UTF-8 glyphs &bull; Hosted on
-      Cloudflare Pages (<a
+      Open UTF-8 icons. Crafted with native UTF-8 glyphs &bull; (<a
         href="https://utf8.a3k.me"
         class="underline hover:text-sky-500">utf8.a3k.me</a
       >)

@@ -42,7 +42,7 @@
 
       <div class="min-w-0 flex-1">
         <p class="text-xs font-medium text-sky-950 sm:text-sm dark:text-sky-50">
-          Install open-utf8-icons for instant offline glyph search.
+          Install Open UTF-8 icons for instant offline glyph search.
         </p>
         {#if pwa.ios}
           <p
@@ -61,7 +61,7 @@
           <button
             type="button"
             onclick={() => void pwa.install()}
-            title="Install open-utf8-icons"
+            title="Install Open UTF-8 icons"
             class="inline-flex h-8 items-center gap-1.5 rounded-full bg-sky-700 px-3 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-sky-600 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:ring-offset-sky-50 focus-visible:outline-none active:scale-[0.96] dark:bg-sky-500 dark:text-sky-950 dark:hover:bg-sky-400 dark:focus-visible:ring-offset-sky-950"
           >
             <span class="text-sm leading-none" aria-hidden="true">⤓</span>
