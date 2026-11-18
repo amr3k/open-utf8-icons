@@ -40,7 +40,8 @@
     emptyHint = "Try a name like arrow, a keyword like favorite, or a code point like u+2605.",
   }: Props = $props();
 
-  const PAGE_SIZE = 96;
+  /** Cards per growth step; a smaller first page keeps the paint light. */
+  const PAGE_SIZE = 48;
 
   /** How many cards are currently mounted. */
   let visibleCount = $state(PAGE_SIZE);
