@@ -68,13 +68,18 @@
 
 {#if results.length === 0}
   <div
-    class="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 py-16 text-center dark:border-zinc-700"
+    class="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50/60 py-16 text-center dark:border-zinc-700 dark:bg-zinc-900/30"
   >
-    <div class="text-4xl" aria-hidden="true">◌</div>
+    <div
+      class="text-4xl text-zinc-300 dark:text-zinc-700"
+      aria-hidden="true">◌</div
+    >
     <p class="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
       {emptyTitle}
     </p>
-    <p class="mt-1 max-w-sm text-xs text-zinc-500 dark:text-zinc-400">
+    <p
+      class="mt-1 max-w-sm text-pretty text-xs text-zinc-500 dark:text-zinc-400"
+    >
       {emptyHint}
     </p>
     {#if onclear}
@@ -104,11 +109,11 @@
   </div>
   <div {@attach observeSentinel} class="h-px" aria-hidden="true"></div>
   <p
-    class="mt-4 text-center text-xs tabular-nums text-zinc-400 dark:text-zinc-500"
+    class="mt-4 text-center text-xs tabular-nums text-zinc-500 dark:text-zinc-400"
     aria-live="polite"
   >
     Showing {formatCount(rendered.length)}
-    <span class="text-zinc-300 dark:text-zinc-600">of</span>
+    <span class="text-zinc-400 dark:text-zinc-500">of</span>
     {formatCount(results.length)}
     {#if rendered.length < results.length}
       <span class="ml-1" aria-hidden="true">▾ scroll for more</span>

@@ -10,7 +10,7 @@ export const PILL_GROUP =
 
 /** A button inside a segmented pill group. */
 export const PILL_BUTTON =
-  "inline-flex items-center justify-center rounded-full px-2.5 py-1 font-medium transition active:scale-[0.96]";
+  "inline-flex items-center justify-center rounded-full px-2.5 py-1.5 font-medium transition active:scale-[0.96]";
 
 /** Selected state inside a segmented pill group. */
 export const PILL_ACTIVE =
