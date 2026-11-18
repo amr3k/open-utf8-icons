@@ -16,7 +16,7 @@
     getCopyText,
     type DeveloperFormat,
   } from "#lib/copy.js";
-  import { cubicOut } from "svelte/easing";
+  import { flyOffset } from "#lib/motion.js";
   import { prefersReducedMotion } from "svelte/motion";
   import { fade, fly } from "svelte/transition";
 
@@ -165,11 +165,7 @@
 
     <div
       class="absolute inset-y-0 right-0 flex w-full max-w-lg flex-col overflow-hidden border-l border-zinc-200 bg-white shadow-2xl sm:rounded-l-[1.75rem] dark:border-zinc-800 dark:bg-zinc-950"
-      transition:fly={{
-        x: reducedMotion ? 0 : 48,
-        duration: reducedMotion ? 0 : PANEL_MS,
-        easing: cubicOut,
-      }}
+      transition:fly={flyOffset(reducedMotion, { x: 48 }, PANEL_MS)}
       onoutroend={handleOutroEnd}
     >
       <!-- Plain <div>: a <header> inside a dialog is exposed as a second

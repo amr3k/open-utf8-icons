@@ -5,9 +5,9 @@
    * are fixed layers, so the offset change causes no layout shift.
    * Pure UTF-8 feedback glyphs (✓ / ✕) come from the toast text itself.
    */
-  import { cubicOut } from "svelte/easing";
   import { prefersReducedMotion } from "svelte/motion";
   import { fly } from "svelte/transition";
+  import { flyOffset } from "#lib/motion.js";
   import { pwa } from "#lib/pwa.svelte.js";
   import { toasts } from "#lib/toast.svelte.js";
 
@@ -23,16 +23,8 @@
   {#each toasts.items as toast (toast.id)}
     <div
       class="pointer-events-auto max-w-full"
-      in:fly={{
-        y: reducedMotion ? 0 : 12,
-        duration: reducedMotion ? 0 : 200,
-        easing: cubicOut,
-      }}
-      out:fly={{
-        y: reducedMotion ? 0 : 8,
-        duration: reducedMotion ? 0 : 140,
-        easing: cubicOut,
-      }}
+      in:fly={flyOffset(reducedMotion, { y: 12 }, 200)}
+      out:fly={flyOffset(reducedMotion, { y: 8 }, 140)}
     >
       <button
         type="button"
