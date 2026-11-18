@@ -108,6 +108,30 @@ const zimbabweFlag = makeGlyph({
   keywords: ["flag", "zimbabwe", "zw"],
 });
 
+const capeVerdeFlag = makeGlyph({
+  char: "🇨🇻",
+  name: "FLAG OF CAPE VERDE",
+  codepoint: "U+1F1E8 U+1F1FB",
+  dec: "127464 127483",
+  hex: "1f1e8 1f1fb",
+  htmlEntity: "&#127464;&#127483;",
+  htmlHex: "&#x1f1e8;&#x1f1fb;",
+  cssEscape: "\\1f1e8 \\1f1fb",
+  jsEscape: "\\u{1f1e8}\\u{1f1fb}",
+  block: "Flags",
+  keywords: ["flag", "cape", "verde", "cv", "cabo verde"],
+});
+
+/** Long-name distractor: fuzzy matching must not bury short canonical names. */
+const strokeArrow = makeGlyph({
+  char: "⇊",
+  name: "DOWNWARDS ARROW WITH DOUBLE STROKE",
+  codepoint: "U+21CA",
+  dec: 8650,
+  hex: "21ca",
+  keywords: ["down", "arrow", "double", "stroke"],
+});
+
 const fixtures = [
   blackStar,
   whiteStar,
@@ -116,6 +140,8 @@ const fixtures = [
   leftArrow,
   dollar,
   zimbabweFlag,
+  capeVerdeFlag,
+  strokeArrow,
 ];
 
 const entries = buildSearchEntries(fixtures);
@@ -161,11 +187,33 @@ describe("fuzzyScore", () => {
     expect(tight!).toBeGreaterThan(loose!);
   });
 
-  test("rejects non-subsequences and clamps low scores to one", () => {
+  test("prefers short canonical names over long ones", () => {
+    const canonical = fuzzyScore("black star", "star");
+    const buried = fuzzyScore("leftwards arrow with double stroke", "lads");
+    expect(canonical).not.toBeNull();
+    expect(buried).not.toBeNull();
+    expect(canonical!).toBeGreaterThan(buried!);
+  });
+
+  test("rewards matches at word starts", () => {
+    // Same needle: word-start alignment must overcome the shorter haystack's
+    // length advantage ("abacus" is 6 chars, "black star" is 10).
+    const wordStarts = fuzzyScore("black star", "bs");
+    const midWord = fuzzyScore("abacus", "bs");
+    expect(wordStarts).not.toBeNull();
+    expect(midWord).not.toBeNull();
+    expect(wordStarts!).toBeGreaterThan(midWord!);
+  });
+
+  test("rejects non-subsequences; empty needle scores 0", () => {
     expect(fuzzyScore("black star", "xyz")).toBeNull();
-    // A weak-but-real subsequence never reads as "no match".
-    expect(fuzzyScore("black star", "bs")).toBe(1);
     expect(fuzzyScore("black", "blackstar")).toBeNull();
+    expect(fuzzyScore("black star", "")).toBe(0);
+  });
+
+  test("a real match never scores below 1", () => {
+    expect(fuzzyScore("black star", "bs")).toBeGreaterThanOrEqual(1);
+    expect(fuzzyScore("black star", "ckr")).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -238,7 +286,16 @@ describe("scoreEntry", () => {
     const fuzzy = scoreEntry(star, "blstar", codepointOf("blstar"));
     expect(fuzzy).not.toBeNull();
     expect(fuzzy!).toBeGreaterThan(0);
-    expect(fuzzy!).toBeLessThanOrEqual(100);
+    expect(fuzzy!).toBeLessThanOrEqual(115);
+  });
+
+  test("falls back to fuzzy keyword matching for typos", () => {
+    const star = entries.find((entry) => entry.glyph === blackStar)!;
+    const fuzzy = scoreEntry(star, "favrite", codepointOf("favrite"));
+    expect(fuzzy).not.toBeNull();
+    expect(fuzzy!).toBeGreaterThan(0);
+    // Fuzzy keyword matches stay below substring-level keyword matches.
+    expect(fuzzy!).toBeLessThan(150);
   });
 
   test("scores multi-codepoint flags by each part", () => {
@@ -262,9 +319,9 @@ describe("searchGlyphs", () => {
     expect(searchGlyphs(entries, "   ")).toEqual(fixtures);
   });
 
-  test("respects the limit", () => {
-    expect(searchGlyphs(entries, "", { limit: 3 })).toHaveLength(3);
-    expect(searchGlyphs(entries, "star", { limit: 2 })).toHaveLength(2);
+  test("respects an explicit limit", () => {
+    expect(searchGlyphs(entries, "", 3)).toHaveLength(3);
+    expect(searchGlyphs(entries, "star", 2)).toHaveLength(2);
   });
 
   test("ranks name prefix above word prefix above keyword prefix", () => {
@@ -309,7 +366,20 @@ describe("searchGlyphs", () => {
   });
 
   test("matches fuzzy subsequences across name words", () => {
-    expect(searchGlyphs(entries, "blstr")[0]).toBe(blackStar);
+    const results = searchGlyphs(entries, "blstr");
+    expect(results[0]).toBe(blackStar);
+    // Short canonical names beat incidental subsequences inside long names.
+    expect(results.indexOf(blackStar)).toBeLessThan(
+      results.indexOf(strokeArrow),
+    );
+  });
+
+  test("matches fuzzy keyword typos", () => {
+    expect(searchGlyphs(entries, "favrite")[0]).toBe(blackStar);
+  });
+
+  test("matches multi-word keywords exactly", () => {
+    expect(searchGlyphs(entries, "cabo verde")).toEqual([capeVerdeFlag]);
   });
 
   test("padded and unpadded hex queries are equivalent", () => {

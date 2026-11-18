@@ -13,7 +13,7 @@
  * - name / word / keyword prefix matches
  * - name / keyword substring matches
  * - code point prefix matches (`26`, `973`)
- * - greedy subsequence ("fuzzy") matching over names
+ * - greedy subsequence ("fuzzy") matching over names and keywords
  *
  * Results sort by descending score; equal scores prefer shorter (more
  * canonical) names; remaining ties keep dataset order (stable sort).
@@ -101,11 +101,17 @@ export function parseCodepointQuery(query: string): CodepointQuery | null {
 }
 
 /**
- * Greedy subsequence match over `haystack`.
+ * Greedy subsequence match over `haystack` (a single name or keyword — never
+ * a joined blob, which produces noisy cross-word hits).
  *
- * Returns a compactness score in `0..100` (tighter matches score higher,
- * long haystacks are penalized slightly), or `null` when `needle` is not a
- * subsequence of `haystack`.
+ * Returns a relevance score (`1..~125`), or `null` when `needle` is not a
+ * subsequence of `haystack`. The score rewards:
+ * - compact matches (few gaps between matched characters),
+ * - matches whose characters start name words (e.g. "blstr" → **bl**ack
+ *   **st**a**r**),
+ * - matches anchored at the start of the haystack, and
+ * - shorter haystacks, so canonical names beat incidental subsequences
+ *   buried inside long names.
  */
 export function fuzzyScore(haystack: string, needle: string): number | null {
   if (needle.length === 0) return 0;
@@ -115,10 +121,14 @@ export function fuzzyScore(haystack: string, needle: string): number | null {
   let first = -1;
   let last = -1;
   let gaps = 0;
+  let wordStarts = 0;
 
   for (const char of needle) {
     const found = haystack.indexOf(char, searchFrom);
     if (found === -1) return null;
+    if (found === 0 || haystack.charAt(found - 1) === " ") {
+      wordStarts += 1;
+    }
     if (first === -1) {
       first = found;
     } else {
@@ -129,12 +139,19 @@ export function fuzzyScore(haystack: string, needle: string): number | null {
   }
 
   const span = last - first + 1;
-  const compactness = needle.length / span;
-  const lengthPenalty = Math.min(haystack.length, 40) / 40;
+  const compactness = needle.length / span; // 0..1
+  // Longer haystacks score lower (factor 1.0 → 0.5 as length grows 0 → 60).
+  const lengthFactor = 1 - Math.min(haystack.length, 60) / 120;
+  const boundaryBonus = 15 * wordStarts;
+  const anchorBonus = first === 0 ? 10 : 0;
   const gapPenalty = Math.min(gaps * 2, 20);
   // A real subsequence match always scores at least 1, so callers can treat
   // 0/null cleanly (0 is reserved for the empty needle).
-  return Math.max(1, Math.round(100 * compactness * lengthPenalty) - gapPenalty);
+  return Math.max(
+    1,
+    Math.round(100 * compactness * lengthFactor + boundaryBonus + anchorBonus) -
+      gapPenalty,
+  );
 }
 
 // Matching scores — deliberately spread apart so ordering is predictable.
@@ -156,7 +173,7 @@ const SCORE_HEX_PREFIX = 120;
  * Score one entry against a normalized query.
  *
  * Returns the best single score achieved by the entry, or `null` when
- * nothing matches. Ties are broken by dataset order downstream.
+ * nothing matches. Ties are broken by shorter names, then dataset order.
  */
 export function scoreEntry(
   entry: SearchEntry,
@@ -194,40 +211,37 @@ export function scoreEntry(
   }
 
   const keywords = entry.glyph.keywords;
-  const singleWord = !query.includes(" ");
   let text = 0;
 
   if (entry.nameLower === query) {
     text = SCORE_NAME_EXACT;
   } else if (entry.nameWords.some((word) => word === query)) {
     text = SCORE_WORD_EXACT;
-  } else if (singleWord && keywords.some((word) => word === query)) {
+  } else if (keywords.some((keyword) => keyword === query)) {
     text = SCORE_KEYWORD_EXACT;
   } else if (entry.nameLower.startsWith(query)) {
     text = SCORE_NAME_PREFIX;
   } else if (entry.nameWords.some((word) => word.startsWith(query))) {
     text = SCORE_WORD_PREFIX;
-  } else if (
-    singleWord &&
-    keywords.length > 0 &&
-    keywords.some((word) => word.startsWith(query))
-  ) {
+  } else if (keywords.some((keyword) => keyword.startsWith(query))) {
     text = SCORE_KEYWORD_PREFIX;
   } else if (entry.nameLower.includes(query)) {
     text = SCORE_NAME_CONTAINS;
-  } else if (
-    singleWord &&
-    keywords.length > 0 &&
-    keywords.some((word) => word.includes(query))
-  ) {
+  } else if (keywords.some((keyword) => keyword.includes(query))) {
     text = SCORE_KEYWORD_CONTAINS;
   } else {
-    // Fuzzy subsequence matching runs over names only — running it over the
-    // joined keyword blob proved far too noisy (scattered hits like
-    // "leftward**s** lef**t** **a****r**row" matching "star").
-    const fuzzyName = fuzzyScore(entry.nameLower, query);
-    if (fuzzyName !== null) {
-      text = fuzzyName; // 1..100
+    // Fuzzy subsequence matching: the best match over the name and each
+    // keyword individually. Keywords are scored one at a time — matching
+    // against a joined blob produced noisy cross-word hits.
+    let best = fuzzyScore(entry.nameLower, query);
+    for (const keyword of keywords) {
+      const score = fuzzyScore(keyword, query);
+      if (score !== null && (best === null || score > best)) {
+        best = score;
+      }
+    }
+    if (best !== null) {
+      text = best; // 1..~115
     }
   }
 
@@ -235,23 +249,29 @@ export function scoreEntry(
   return best > 0 ? best : null;
 }
 
-export interface SearchOptions {
-  /** Maximum number of results to return. Defaults to all matches. */
-  limit?: number;
+/** UI-facing status of the current search + filter combination. */
+export interface SearchStatus {
+  /** Glyphs matching the current query within the active block filter. */
+  matchCount: number;
+  /** Glyphs in scope before the query is applied (block filter included). */
+  totalCount: number;
+  /** Whether a query or block filter is narrowing the directory. */
+  filtersActive: boolean;
 }
 
 /**
  * Search a precomputed index and return the best-ranked glyphs.
  *
  * An empty query returns every glyph in dataset order. Results are sorted by
- * descending score; equal scores keep dataset order (stable sort).
+ * descending score; equal scores prefer shorter names, then dataset order.
+ * `limit` defaults to unlimited — callers render the list windowed instead of
+ * truncating matches the user can never reach.
  */
 export function searchGlyphs(
   entries: readonly SearchEntry[],
   query: string,
-  options: SearchOptions = {},
+  limit: number = Number.POSITIVE_INFINITY,
 ): Glyph[] {
-  const limit = options.limit ?? Number.POSITIVE_INFINITY;
   const normalized = normalizeQuery(query);
 
   if (normalized === "") {
