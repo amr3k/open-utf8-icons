@@ -142,15 +142,15 @@
   <title>{SITE_TITLE}</title>
 </svelte:head>
 
-<main class="mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-10 sm:px-6">
-  <div class="mb-8">
+<main class="mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-8 sm:px-6 sm:pt-10">
+  <div class="rise-in mb-8">
     <h2
-      class="text-balance text-2xl font-extrabold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50"
+      class="text-balance text-3xl font-extrabold leading-[1.1] tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50"
     >
       Discover, preview &amp; copy
       <span class="text-sky-600 dark:text-sky-400">native UTF-8</span> glyphs.
     </h2>
-    <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+    <p class="mt-2 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
       {formatCount(dataset.count)} glyphs from Unicode {dataset.unicode}
       &middot; instant offline search &middot; click a glyph to inspect &middot; press
       <kbd
@@ -160,9 +160,14 @@
     </p>
   </div>
 
-  <SearchBar bind:query bind:copyFormat {status} />
+  <div class="rise-in" style="animation-delay: 60ms">
+    <SearchBar bind:query bind:copyFormat {status} />
+  </div>
 
-  <div class="mt-4 flex flex-wrap items-center gap-2">
+  <div
+    class="rise-in mt-4 flex flex-wrap items-center gap-2"
+    style="animation-delay: 100ms"
+  >
     <ViewFilter
       {view}
       favoritesCount={library.favorites.length}
@@ -173,7 +178,7 @@
       <button
         type="button"
         onclick={() => library.clearRecents()}
-        class="inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-zinc-500 transition hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-zinc-100"
+        class="inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-zinc-500 transition hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-zinc-100"
       >
         <span aria-hidden="true">✕</span>
         <span>Clear recents</span>
@@ -181,22 +186,26 @@
     {/if}
   </div>
 
-  <BlockFilter blocks={scopedBlocks} total={viewEntries.length} bind:block />
+  <div class="rise-in" style="animation-delay: 140ms">
+    <BlockFilter blocks={scopedBlocks} total={viewEntries.length} bind:block />
+  </div>
 
-  <!-- #key resets the grid's render window when the query/filter changes, but
-       not when results merely reorder (e.g. recents after a copy) -->
-  {#key `${view}|${block ?? ""}|${query}`}
-    <GlyphGrid
-      {results}
-      format={copyFormat}
-      favorites={favoriteKeys}
-      oncopy={handleCopy}
-      oninspect={(glyph) => (selected = glyph)}
-      onclear={clearAll}
-      emptyTitle={emptyState.title}
-      emptyHint={emptyState.hint}
-    />
-  {/key}
+  <div class="rise-in" style="animation-delay: 180ms">
+    <!-- #key resets the grid's render window when the query/filter changes, but
+         not when results merely reorder (e.g. recents after a copy) -->
+    {#key `${view}|${block ?? ""}|${query}`}
+      <GlyphGrid
+        {results}
+        format={copyFormat}
+        favorites={favoriteKeys}
+        oncopy={handleCopy}
+        oninspect={(glyph) => (selected = glyph)}
+        onclear={clearAll}
+        emptyTitle={emptyState.title}
+        emptyHint={emptyState.hint}
+      />
+    {/key}
+  </div>
 </main>
 
 <GlyphInspector
