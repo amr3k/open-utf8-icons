@@ -47,7 +47,7 @@ async function readBytes(path: string): Promise<Uint8Array> {
 describe("site metadata", () => {
   test("describes the site with concise, absolute values", () => {
     expect(SITE_URL).toBe("https://utf8.a3k.me");
-    expect(SITE_NAME).toBe("open-utf8-icons");
+    expect(SITE_NAME).toBe("Open UTF-8 icons");
     expect(SITE_TITLE.length).toBeLessThanOrEqual(60);
     expect(SITE_DESCRIPTION.length).toBeGreaterThanOrEqual(80);
     expect(SITE_DESCRIPTION.length).toBeLessThanOrEqual(160);
@@ -142,7 +142,7 @@ describe("document metadata", () => {
   test("the offline page stays out of the index", async () => {
     const offline = await Bun.file("src/routes/offline/+page.svelte").text();
     expect(offline).toContain('<meta name="robots" content="noindex" />');
-    expect(offline).toContain("<title>Offline — open-utf8-icons</title>");
+    expect(offline).toContain("<title>Offline — Open UTF-8 icons</title>");
   });
 });
 

@@ -34,7 +34,7 @@ describe("PWA manifest", () => {
   test("defines the install experience", async () => {
     const manifest = await loadManifest();
     expect(manifest["id"]).toBe("/");
-    expect(manifest["name"]).toBe("open-utf8-icons");
+    expect(manifest["name"]).toBe("Open UTF-8 icons");
     expect(manifest["short_name"]).toBe("utf8 icons");
     expect(manifest["start_url"]).toBe("/");
     expect(manifest["scope"]).toBe("/");

@@ -16,7 +16,7 @@
       <a
         href="/"
         class="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-xl font-bold text-sky-400 shadow-xs transition hover:scale-105 active:scale-[0.96] dark:bg-zinc-100 dark:text-sky-600"
-        aria-label="open-utf8-icons homepage"
+        aria-label="Open UTF-8 icons homepage"
       >
         <span aria-hidden="true">ツ</span>
       </a>
@@ -25,7 +25,7 @@
           <h1
             class="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
           >
-            open-utf8-icons
+            Open UTF-8 icons
           </h1>
           <span
             class="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-700 dark:text-sky-300"

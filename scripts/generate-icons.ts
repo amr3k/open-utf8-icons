@@ -274,7 +274,7 @@ async function main(): Promise<void> {
     label: "Scripts.txt",
   });
 
-  console.log("ツ open-utf8-icons — dataset extraction");
+  console.log("ツ Open UTF-8 icons — dataset extraction");
   console.log(`  Unicode version: ${opts.unicodeVersion}`);
   console.log(`  UCD source: ${source.origin}`);
 

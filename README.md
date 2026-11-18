@@ -1,4 +1,4 @@
-# open-utf8-icons `ツ`
+# Open UTF-8 icons `ツ`
 
 [![Built with Bun](https://img.shields.io/badge/Bun-1.4+-black?logo=bun)](https://bun.sh)
 [![Framework](https://img.shields.io/badge/SvelteKit-Svelte%205-orange?logo=svelte)](https://svelte.dev)
@@ -125,7 +125,7 @@ Clicking any glyph opens an accessible slide-over inspector (native `<dialog>` �
 
 `utf8.a3k.me` installs as a Progressive Web App and keeps working when the network does not — all without a PWA plugin or extra runtime dependencies.
 
-- **Manifest**: [`static/manifest.webmanifest`](static/manifest.webmanifest) declares `open-utf8-icons`, a `/` scope, standalone display, categories, light theme/background colors and 192/512 px any + maskable icons (plus a 180 px `apple-touch-icon`), all rendered from the `ツ` brand mark.
+- **Manifest**: [`static/manifest.webmanifest`](static/manifest.webmanifest) declares `Open UTF-8 icons`, a `/` scope, standalone display, categories, light theme/background colors and 192/512 px any + maskable icons (plus a 180 px `apple-touch-icon`), all rendered from the `ツ` brand mark.
 - **Service worker** ([`src/service-worker/index.ts`](src/service-worker/index.ts), strategies in [`src/lib/sw-policy.ts`](src/lib/sw-policy.ts)): on install it precaches the app shell, every static asset (manifest, icons, favicon) and the immutable JS bundle — which already contains the full Unicode dataset, so offline search needs no extra request. Navigations are network-first, even for the cached root, with the cached shell as fallback; immutable build output is cache-first and other same-origin GETs revalidate in the background. Each deployment gets a versioned cache; older caches are pruned on activation. The worker is disabled during `vite dev` so HMR stays fresh.
 - **Offline fallback**: a prerendered `/offline` page is precached and served for navigations that have no cached page, with a retry action. Prerendered asset URLs are root-relative, so the fallback renders correctly even when it answers a nested offline navigation. An unobtrusive status pill appears while `navigator.onLine` is false and verifies Cache Storage holds the shell before promising cached search, inspection and copying.
 - **Install prompt**: Chromium's `beforeinstallprompt` is captured by an inline bootstrap before hydration and surfaced as a small, dismissible floating banner at the bottom of the screen on touch-first devices (a fixed layer, so it can never shift the page); iOS gets the equivalent Share → Add to Home Screen hint. Dismissals are remembered in `localStorage` (`utf8:install-dismissed`), and the banner never appears in standalone mode.
@@ -136,7 +136,7 @@ Clicking any glyph opens an accessible slide-over inspector (native `<dialog>` �
 
 The brand mark is `ツ` (`U+30C4`), drawn from the same system font stack as the header — no bespoke icon packs or SVG sprites.
 
-![open-utf8-icons social card](static/og-image.png)
+![Open UTF-8 icons social card](static/og-image.png)
 
 - **Favicon set**: [`static/favicon.svg`](static/favicon.svg) is the crisp vector source for modern browsers; `favicon-16.png` and `favicon-32.png` provide pixel-perfect PNG fallbacks, while `favicon.ico` covers legacy tab UIs. The 180 px `apple-touch-icon` and the 192/512 px PWA icons handle home screens.
 - **Social card**: [`static/og-image.png`](static/og-image.png) is a 1200×630 Open Graph / Twitter card highlighting the `ツ` mark, the glyph directory and `utf8.a3k.me`. Its source lives in [`scripts/assets/og-image.svg`](scripts/assets/og-image.svg); the render command is documented at the top of the SVG.

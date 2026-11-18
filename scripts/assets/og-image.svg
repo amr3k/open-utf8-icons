@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="open-utf8-icons — discover, preview and copy native UTF-8 glyphs at utf8.a3k.me">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Open UTF-8 icons — discover, preview and copy native UTF-8 glyphs at utf8.a3k.me">
   <!--
     Source for static/og-image.png (Phase 6 of #1). Render with:
     rsvg-convert -w 1200 -h 630 scripts/assets/og-image.svg -o static/og-image.png
@@ -30,7 +30,7 @@
 
   <!-- Copy -->
   <text x="80" y="306" font-family="'DejaVu Sans', 'Noto Sans', sans-serif" font-size="20" font-weight="700" letter-spacing="4" fill="#38bdf8">UTF-8 / UNICODE GLYPH DIRECTORY</text>
-  <text x="78" y="382" font-family="'DejaVu Sans', 'Noto Sans', sans-serif" font-size="62" font-weight="700" fill="#fafafa">open-utf8-icons</text>
+  <text x="78" y="382" font-family="'DejaVu Sans', 'Noto Sans', sans-serif" font-size="56" font-weight="700" fill="#fafafa">Open UTF-8 icons</text>
   <text x="80" y="438" font-family="'DejaVu Sans', 'Noto Sans', sans-serif" font-size="27" fill="#a1a1aa">Discover, preview &amp; copy 4,021 native</text>
   <text x="80" y="476" font-family="'DejaVu Sans', 'Noto Sans', sans-serif" font-size="27" fill="#a1a1aa">UTF-8 and Unicode glyphs — offline.</text>
 
