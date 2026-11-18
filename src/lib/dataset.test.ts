@@ -2,7 +2,7 @@
  * Unit tests for the dataset access layer (`src/lib/dataset.ts`).
  *
  * These guard the derived values the directory UI depends on (block stats,
- * search index) against regeneration drift in `icons.json`.
+ * code point lookups) against regeneration drift in `icons.json`.
  */
 
 import { describe, expect, test } from "bun:test";
@@ -11,12 +11,19 @@ import {
   countBlocks,
   dataset,
   glyphByCodepoint,
-  glyphByHash,
   glyphFromHash,
   glyphs,
-  searchEntries,
-  searchEntryByCodepoint,
 } from "./dataset.js";
+
+describe("dataset", () => {
+  test("exposes the unpacked glyphs and matching metadata", () => {
+    expect(dataset.glyphs.length).toBe(glyphs.length);
+    expect(dataset.glyphs[0]).toBe(glyphs[0]);
+    expect(dataset.count).toBe(glyphs.length);
+    expect(dataset.glyphs[0]?.char).toBe("←");
+    expect(dataset.glyphs.at(-1)?.block).toBe("Flags");
+  });
+});
 
 describe("glyphByCodepoint", () => {
   test("resolves every glyph from its code point label", () => {
@@ -27,9 +34,8 @@ describe("glyphByCodepoint", () => {
   });
 });
 
-describe("glyphByHash", () => {
+describe("glyphFromHash", () => {
   test("resolves every glyph from its permalink fragment", () => {
-    expect(glyphByHash.size).toBe(glyphs.length);
     expect(glyphFromHash("#U+2605")?.name).toBe("BLACK STAR");
     expect(glyphFromHash("#U+1F1FA-U+1F1F8")?.char).toBe("🇺🇸");
   });
@@ -44,15 +50,6 @@ describe("glyphByHash", () => {
     expect(glyphFromHash("#U+2605<script>")).toBeUndefined();
     expect(glyphFromHash("#javascript:alert(1)")).toBeUndefined();
     expect(glyphFromHash("")).toBeUndefined();
-  });
-});
-
-describe("searchEntryByCodepoint", () => {
-  test("resolves search entries and keeps the same glyph objects", () => {
-    expect(searchEntryByCodepoint.size).toBe(glyphs.length);
-    const entry = searchEntryByCodepoint.get("U+2605");
-    expect(entry?.glyph).toBe(glyphByCodepoint.get("U+2605"));
-    expect(entry?.nameLower).toBe("black star");
   });
 });
 
@@ -92,17 +89,5 @@ describe("blockStats", () => {
       { block: "Arrows", count: 1 },
     ]);
     expect(countBlocks([])).toEqual([]);
-  });
-});
-
-describe("searchEntries", () => {
-  test("indexes every glyph in dataset order", () => {
-    expect(searchEntries.length).toBe(glyphs.length);
-    const first = searchEntries.at(0);
-    expect(first?.index).toBe(0);
-    expect(first?.glyph).toBe(glyphs[0]);
-    const last = searchEntries.at(-1);
-    expect(last?.index).toBe(glyphs.length - 1);
-    expect(last?.glyph).toBe(glyphs.at(-1));
   });
 });

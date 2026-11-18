@@ -8,9 +8,9 @@
   import {
     countBlocks,
     dataset,
+    glyphByCodepoint,
     glyphFromHash,
-    searchEntries,
-    searchEntryByCodepoint,
+    glyphs,
   } from "#lib/dataset.js";
   import { glyphHash, parseGlyphHash } from "#lib/permalink.js";
   import { searchGlyphs, type SearchStatus } from "#lib/search.js";
@@ -54,46 +54,44 @@
   /** Favorited code point keys — a Set keeps per-card lookups O(1). */
   let favoriteKeys = $derived(new Set(library.favorites));
 
-  /** Entries in the active collection, in collection order. */
-  let viewEntries = $derived.by(() => {
+  /** Glyphs in the active collection, in collection order. */
+  let viewGlyphs = $derived.by<readonly Glyph[]>(() => {
     if (view === "favorites") {
       return library.favorites.flatMap((key) => {
-        const entry = searchEntryByCodepoint.get(key);
-        return entry === undefined ? [] : [entry];
+        const glyph = glyphByCodepoint.get(key);
+        return glyph === undefined ? [] : [glyph];
       });
     }
     if (view === "recent") {
       return library.recents.flatMap((recent) => {
-        const entry = searchEntryByCodepoint.get(recent.key);
-        return entry === undefined ? [] : [entry];
+        const glyph = glyphByCodepoint.get(recent.key);
+        return glyph === undefined ? [] : [glyph];
       });
     }
-    return searchEntries;
+    return glyphs;
   });
 
-  /** Entries in scope for the active collection + block filter. */
-  let contextEntries = $derived(
+  /** Glyphs in scope for the active collection + block filter. */
+  let contextGlyphs = $derived(
     block === null
-      ? viewEntries
-      : viewEntries.filter((entry) => entry.glyph.block === block),
+      ? viewGlyphs
+      : viewGlyphs.filter((glyph) => glyph.block === block),
   );
 
   /**
-   * Scored search results over the scoped entries. Ranked matches are never
-   * truncated — the windowed grid renders them 96 at a time.
+   * Scored search results over the scoped glyphs. Ranked matches are never
+   * truncated — the windowed grid renders them 48 at a time.
    */
-  let results = $derived(searchGlyphs(contextEntries, query));
+  let results = $derived(searchGlyphs(contextGlyphs, query));
 
   let status = $derived<SearchStatus>({
     matchCount: results.length,
-    totalCount: contextEntries.length,
+    totalCount: contextGlyphs.length,
     filtersActive: query.trim() !== "" || block !== null,
   });
 
   /** Block chips reflect the active collection, not the whole dataset. */
-  let scopedBlocks = $derived(
-    countBlocks(viewEntries.map((entry) => entry.glyph)),
-  );
+  let scopedBlocks = $derived(countBlocks(viewGlyphs));
 
   /** Context-aware empty state for the grid. */
   let emptyState = $derived.by(() => {
@@ -251,7 +249,7 @@
   </div>
 
   <div class="rise-in" style="animation-delay: 140ms">
-    <BlockFilter blocks={scopedBlocks} total={viewEntries.length} bind:block />
+    <BlockFilter blocks={scopedBlocks} total={viewGlyphs.length} bind:block />
   </div>
 
   <div class="rise-in" style="animation-delay: 180ms">
