@@ -13,7 +13,7 @@ export { THEME_STORAGE_KEY, resolveTheme, getNextThemeMode, getThemeIcon };
 class ThemeManager {
 	mode = $state<ThemeMode>('system');
 	resolved = $state<ResolvedTheme>('light');
-	isInitialized = $state(false);
+	private isInitialized = false;
 
 	private mediaQuery: MediaQueryList | null = null;
 	private handleMediaChange = (e: MediaQueryListEvent) => {
