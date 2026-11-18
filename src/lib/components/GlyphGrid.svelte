@@ -17,12 +17,28 @@
   interface Props {
     results: readonly Glyph[];
     format: CopyFormat;
+    /** Code point keys of favorited glyphs, for the card star badge. */
+    favorites?: ReadonlySet<string>;
     oncopy: (glyph: Glyph) => void;
+    /** Open the glyph inspector for a card. */
+    oninspect: (glyph: Glyph) => void;
     /** Optional handler to clear the active query/filters on empty state. */
     onclear?: () => void;
+    /** Empty-state copy when the current collection/search has no results. */
+    emptyTitle?: string;
+    emptyHint?: string;
   }
 
-  let { results, format, oncopy, onclear }: Props = $props();
+  let {
+    results,
+    format,
+    favorites = new Set<string>(),
+    oncopy,
+    oninspect,
+    onclear,
+    emptyTitle = "No glyphs match your search.",
+    emptyHint = "Try a name like arrow, a keyword like favorite, or a code point like u+2605.",
+  }: Props = $props();
 
   const PAGE_SIZE = 96;
 
@@ -56,15 +72,10 @@
   >
     <div class="text-4xl" aria-hidden="true">◌</div>
     <p class="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-      No glyphs match your search.
+      {emptyTitle}
     </p>
     <p class="mt-1 max-w-sm text-xs text-zinc-500 dark:text-zinc-400">
-      Try a name like <span class="font-medium text-zinc-700 dark:text-zinc-300"
-        >arrow</span
-      >, a keyword like
-      <span class="font-medium text-zinc-700 dark:text-zinc-300">favorite</span
-      >, or a code point like
-      <span class="font-medium text-zinc-700 dark:text-zinc-300">u+2605</span>.
+      {emptyHint}
     </p>
     {#if onclear}
       <button
@@ -82,7 +93,13 @@
     class="mt-6 grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12"
   >
     {#each rendered as glyph (glyph.codepoint)}
-      <GlyphCard {glyph} {format} {oncopy} />
+      <GlyphCard
+        {glyph}
+        {format}
+        favorite={favorites.has(glyph.codepoint)}
+        {oncopy}
+        {oninspect}
+      />
     {/each}
   </div>
   <div {@attach observeSentinel} class="h-px" aria-hidden="true"></div>

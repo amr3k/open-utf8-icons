@@ -2,22 +2,59 @@
   import SearchBar from "#lib/components/SearchBar.svelte";
   import BlockFilter from "#lib/components/BlockFilter.svelte";
   import GlyphGrid from "#lib/components/GlyphGrid.svelte";
-  import { blockStats, dataset, glyphs, searchEntries } from "#lib/dataset.js";
+  import ViewFilter from "#lib/components/ViewFilter.svelte";
+  import GlyphInspector from "#lib/components/GlyphInspector.svelte";
+  import {
+    countBlocks,
+    dataset,
+    searchEntries,
+    searchEntryByCodepoint,
+  } from "#lib/dataset.js";
   import { searchGlyphs, type SearchStatus } from "#lib/search.js";
   import { formatCount } from "#lib/format.js";
-  import { copyToClipboard, getCopyText, type CopyFormat } from "#lib/copy.js";
+  import {
+    copyToClipboard,
+    getCopyText,
+    type CopyFormat,
+    type DeveloperFormat,
+  } from "#lib/copy.js";
+  import { library } from "#lib/library.svelte.js";
+  import type { LibraryView } from "#lib/library.js";
   import { toasts } from "#lib/toast.svelte.js";
   import type { Glyph } from "#lib/data/types.js";
 
   let query = $state("");
   let block = $state<string | null>(null);
   let copyFormat = $state<CopyFormat>("char");
+  let view = $state<LibraryView>("all");
+  /** Glyph shown in the inspector drawer, or `null` when closed. */
+  let selected = $state<Glyph | null>(null);
 
-  /** Entries in scope for the active block filter (all glyphs when null). */
+  /** Favorited code point keys — a Set keeps per-card lookups O(1). */
+  let favoriteKeys = $derived(new Set(library.favorites));
+
+  /** Entries in the active collection, in collection order. */
+  let viewEntries = $derived.by(() => {
+    if (view === "favorites") {
+      return library.favorites.flatMap((key) => {
+        const entry = searchEntryByCodepoint.get(key);
+        return entry === undefined ? [] : [entry];
+      });
+    }
+    if (view === "recent") {
+      return library.recents.flatMap((recent) => {
+        const entry = searchEntryByCodepoint.get(recent.key);
+        return entry === undefined ? [] : [entry];
+      });
+    }
+    return searchEntries;
+  });
+
+  /** Entries in scope for the active collection + block filter. */
   let contextEntries = $derived(
     block === null
-      ? searchEntries
-      : searchEntries.filter((entry) => entry.glyph.block === block),
+      ? viewEntries
+      : viewEntries.filter((entry) => entry.glyph.block === block),
   );
 
   /**
@@ -32,9 +69,44 @@
     filtersActive: query.trim() !== "" || block !== null,
   });
 
-  /** 1-click quick copy in the selected format, confirmed by a toast. */
-  async function handleCopy(glyph: Glyph) {
-    const copied = await copyToClipboard(getCopyText(glyph, copyFormat));
+  /** Block chips reflect the active collection, not the whole dataset. */
+  let scopedBlocks = $derived(
+    countBlocks(viewEntries.map((entry) => entry.glyph)),
+  );
+
+  /** Context-aware empty state for the grid. */
+  let emptyState = $derived.by(() => {
+    if (query.trim() !== "" || block !== null) {
+      return {
+        title: "No glyphs match your search.",
+        hint: "Try a name like arrow, a keyword like favorite, or a code point like u+2605.",
+      };
+    }
+    if (view === "favorites") {
+      return {
+        title: "No favorites yet.",
+        hint: "Open any glyph and select ☆ to keep it here.",
+      };
+    }
+    if (view === "recent") {
+      return {
+        title: "No recent copies yet.",
+        hint: "Copy any glyph — your most recent copies land here.",
+      };
+    }
+    return {
+      title: "No glyphs match your search.",
+      hint: "Try a name like arrow, a keyword like favorite, or a code point like u+2605.",
+    };
+  });
+
+  /** Quick copy from a card or copy a developer format from the inspector. */
+  async function handleCopy(
+    glyph: Glyph,
+    format: DeveloperFormat = copyFormat,
+  ) {
+    const copied = await copyToClipboard(getCopyText(glyph, format));
+    if (copied) library.recordCopy(glyph.codepoint, format);
     toasts.show(
       copied
         ? `✓ Copied ${glyph.char} — ${glyph.name}`
@@ -42,9 +114,26 @@
     );
   }
 
+  function handleToggleFavorite(glyph: Glyph) {
+    const wasFavorite = library.isFavorite(glyph.codepoint);
+    library.toggleFavorite(glyph.codepoint);
+    toasts.show(
+      wasFavorite
+        ? `☆ Removed ${glyph.char} from favorites`
+        : `★ Added ${glyph.char} to favorites`,
+    );
+  }
+
+  /** Switch collections; the block chip belongs to the previous view. */
+  function selectView(next: LibraryView) {
+    view = next;
+    block = null;
+  }
+
   function clearAll() {
     query = "";
     block = null;
+    view = "all";
   }
 </script>
 
@@ -58,7 +147,8 @@
     </h2>
     <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
       {formatCount(dataset.count)} glyphs from Unicode {dataset.unicode}
-      &middot; instant offline search &middot; press
+      &middot; instant offline search &middot; click a glyph to inspect &middot;
+      press
       <kbd
         class="inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-1 text-[10px] font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
         >/</kbd
@@ -68,15 +158,50 @@
 
   <SearchBar bind:query bind:copyFormat {status} />
 
-  <BlockFilter blocks={blockStats} total={glyphs.length} bind:block />
+  <div class="mt-4 flex flex-wrap items-center gap-2">
+    <ViewFilter
+      view={view}
+      favoritesCount={library.favorites.length}
+      recentCount={library.recents.length}
+      onselect={selectView}
+    />
+    {#if view === "recent" && library.recents.length > 0}
+      <button
+        type="button"
+        onclick={() => library.clearRecents()}
+        class="inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-zinc-500 transition hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-zinc-100"
+      >
+        <span aria-hidden="true">✕</span>
+        <span>Clear recents</span>
+      </button>
+    {/if}
+  </div>
+
+  <BlockFilter
+    blocks={scopedBlocks}
+    total={viewEntries.length}
+    bind:block
+  />
 
   <!-- #key resets the grid's render window whenever the result set changes -->
   {#key results}
     <GlyphGrid
       {results}
       format={copyFormat}
+      favorites={favoriteKeys}
       oncopy={handleCopy}
+      oninspect={(glyph) => (selected = glyph)}
       onclear={clearAll}
+      emptyTitle={emptyState.title}
+      emptyHint={emptyState.hint}
     />
   {/key}
 </main>
+
+<GlyphInspector
+  glyph={selected}
+  favorite={selected !== null && favoriteKeys.has(selected.codepoint)}
+  onclose={() => (selected = null)}
+  oncopy={handleCopy}
+  onfavorite={handleToggleFavorite}
+/>

@@ -9,6 +9,7 @@ describe("buildGlyph", () => {
       codepoints: [0x2605],
       name: "BLACK STAR",
       category: "So",
+      script: "Common",
       block: "Miscellaneous Symbols",
     });
     expect(star).toEqual({
@@ -22,6 +23,7 @@ describe("buildGlyph", () => {
       cssEscape: "\\2605",
       jsEscape: "\\u2605",
       category: "So",
+      script: "Common",
       block: "Miscellaneous Symbols",
       keywords: [
         "black",
@@ -40,6 +42,7 @@ describe("buildGlyph", () => {
       codepoints: [0x1f600],
       name: "GRINNING FACE",
       category: "So",
+      script: "Common",
       block: "Emoticons",
     });
     expect(grin.char).toBe("😀");
@@ -64,6 +67,7 @@ describe("buildGlyph", () => {
       codepoints: flagCodepoints(region.code),
       name: flagEntryName(region),
       category: "So",
+      script: "Common",
       block: "Flags",
       extraKeywords: flagKeywords(region),
     });
@@ -91,6 +95,7 @@ describe("buildGlyph", () => {
       codepoints: [0x2605],
       name: "BLACK STAR",
       category: "So",
+      script: "Common",
       block: "Miscellaneous Symbols",
     });
     expect(star.keywords).toContain("favorite");

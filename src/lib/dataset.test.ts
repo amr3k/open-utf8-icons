@@ -6,7 +6,15 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { blockStats, dataset, glyphs, searchEntries } from "./dataset.js";
+import {
+  blockStats,
+  countBlocks,
+  dataset,
+  glyphByCodepoint,
+  glyphs,
+  searchEntries,
+  searchEntryByCodepoint,
+} from "./dataset.js";
 
 describe("dataset", () => {
   test("exposes the committed dataset metadata", () => {
@@ -17,7 +25,29 @@ describe("dataset", () => {
   });
 });
 
+describe("glyphByCodepoint", () => {
+  test("resolves every glyph from its code point label", () => {
+    expect(glyphByCodepoint.size).toBe(glyphs.length);
+    expect(glyphByCodepoint.get("U+2605")?.name).toBe("BLACK STAR");
+    expect(glyphByCodepoint.get("U+1F1FA U+1F1F8")?.char).toBe("🇺🇸");
+    expect(glyphByCodepoint.get("U+0000")).toBeUndefined();
+  });
+});
+
+describe("searchEntryByCodepoint", () => {
+  test("resolves search entries and keeps the same glyph objects", () => {
+    expect(searchEntryByCodepoint.size).toBe(glyphs.length);
+    const entry = searchEntryByCodepoint.get("U+2605");
+    expect(entry?.glyph).toBe(glyphByCodepoint.get("U+2605"));
+    expect(entry?.nameLower).toBe("black star");
+  });
+});
+
 describe("blockStats", () => {
+  test("matches countBlocks over the full dataset", () => {
+    expect(blockStats).toEqual(countBlocks(glyphs));
+  });
+
   test("counts sum to the total glyph count", () => {
     const total = blockStats.reduce((sum, stat) => sum + stat.count, 0);
     expect(total).toBe(dataset.count);
@@ -40,6 +70,20 @@ describe("blockStats", () => {
       if (!firstSeen.includes(glyph.block)) firstSeen.push(glyph.block);
     }
     expect(blockStats.map((stat) => stat.block)).toEqual(firstSeen);
+  });
+
+  test("countBlocks scopes counts to an arbitrary subset", () => {
+    const star = glyphByCodepoint.get("U+2605");
+    const arrow = glyphByCodepoint.get("U+2190");
+    expect(star).toBeDefined();
+    expect(arrow).toBeDefined();
+    if (star === undefined || arrow === undefined) return;
+
+    expect(countBlocks([star, arrow])).toEqual([
+      { block: "Miscellaneous Symbols", count: 1 },
+      { block: "Arrows", count: 1 },
+    ]);
+    expect(countBlocks([])).toEqual([]);
   });
 });
 

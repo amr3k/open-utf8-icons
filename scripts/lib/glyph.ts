@@ -24,6 +24,8 @@ export interface GlyphSource {
   name: string;
   /** Unicode general category short code, e.g. "So" */
   category: string;
+  /** Unicode script in display form, e.g. "Latin" or "Common" */
+  script: string;
   /** Curated browsing category / Unicode block name */
   block: string;
   /** Extra curated keywords (e.g. flag region aliases) */
@@ -48,6 +50,7 @@ export function buildGlyph(source: GlyphSource): Glyph {
     cssEscape: formatCssEscape(codepoints),
     jsEscape: formatJsEscape(codepoints),
     category: source.category,
+    script: source.script,
     block: source.block,
     keywords: buildKeywords(source.name, [
       ...(curated ?? []),

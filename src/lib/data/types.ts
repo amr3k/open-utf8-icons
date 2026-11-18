@@ -30,6 +30,8 @@ export interface Glyph {
   jsEscape: string;
   /** Unicode general category (short code), e.g. `So` — see {@link CATEGORY_LABELS} */
   category: string;
+  /** Unicode script in display form, e.g. `Latin` or `Common` */
+  script: string;
   /** Curated browsing category / Unicode block name, e.g. `Miscellaneous Symbols` */
   block: string;
   /** Lowercase search terms: name-derived words plus curated synonyms */
