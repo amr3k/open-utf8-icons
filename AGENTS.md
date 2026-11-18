@@ -9,6 +9,7 @@ Guidelines and specifications for building and maintaining **`open-utf8-icons`**
 `open-utf8-icons` is a fast, lightweight, ad-free, open-source web directory for discovering, previewing, and copying native UTF-8 and Unicode glyphs.
 
 ### Core Tenets
+
 1. **Zero Icon Libraries / Zero SVG Icons**: The application strictly dogfoods its own domain. Every UI icon (search, copy, close, theme toggle, navigation, arrows) must be a native UTF-8 Unicode character. Never import icon libraries (e.g., Lucide, Heroicons, FontAwesome) or custom SVG icon bundles.
 2. **Strict Minimal Dependencies**: Avoid dependency sprawl and supply chain noise. Rely on native browser APIs, Svelte primitives, and Bun built-ins before adding third-party packages.
 3. **Offline-First & PWA**: The application must function offline, support instant local search without network latency, and be installable on mobile and desktop as a Progressive Web App (PWA).
@@ -18,15 +19,15 @@ Guidelines and specifications for building and maintaining **`open-utf8-icons`**
 
 ## 2. Tech Stack & Toolchain
 
-| Role | Technology | Configuration Notes |
-| :--- | :--- | :--- |
-| **Runtime & Package Manager** | **Bun** | Use `bun` for package management, script running, formatting, and tests. |
-| **Framework** | **SvelteKit** + **Svelte 5** | Use Svelte 5 Runes (`$state`, `$derived`, `$props`, `$effect`). |
-| **Deployment Adapter** | **`@sveltejs/adapter-cloudflare`** | Configured for Cloudflare Pages/Workers targeting `utf8.a3k.me`. |
-| **CSS & Design System** | **Tailwind CSS v4** | Pure utility-first styles via `@tailwindcss/vite`, supporting explicit Light and Dark modes. |
-| **Icons** | **Native UTF-8 Glyphs** | Standard Unicode characters for all interface controls (e.g. `🔍`, `📋`, `✕`, `☀`, `☾`, `←`, `→`). |
-| **Branding & Identity** | **`ツ`** | Katakana Letter Tu (`U+30C4`) for logo, favicon, and brand marks. |
-| **Social / Sharing** | **Open Graph (OG)** | High-contrast social sharing image (`og-image.png`) highlighting `open-utf8-icons` and `utf8.a3k.me`. |
+| Role                          | Technology                         | Configuration Notes                                                                                   |
+| :---------------------------- | :--------------------------------- | :---------------------------------------------------------------------------------------------------- |
+| **Runtime & Package Manager** | **Bun**                            | Use `bun` for package management, script running, formatting, and tests.                              |
+| **Framework**                 | **SvelteKit** + **Svelte 5**       | Use Svelte 5 Runes (`$state`, `$derived`, `$props`, `$effect`).                                       |
+| **Deployment Adapter**        | **`@sveltejs/adapter-cloudflare`** | Configured for Cloudflare Pages/Workers targeting `utf8.a3k.me`.                                      |
+| **CSS & Design System**       | **Tailwind CSS v4**                | Pure utility-first styles via `@tailwindcss/vite`, supporting explicit Light and Dark modes.          |
+| **Icons**                     | **Native UTF-8 Glyphs**            | Standard Unicode characters for all interface controls (e.g. `🔍`, `📋`, `✕`, `☀`, `☾`, `←`, `→`).    |
+| **Branding & Identity**       | **`ツ`**                           | Katakana Letter Tu (`U+30C4`) for logo, favicon, and brand marks.                                     |
+| **Social / Sharing**          | **Open Graph (OG)**                | High-contrast social sharing image (`og-image.png`) highlighting `open-utf8-icons` and `utf8.a3k.me`. |
 
 ---
 
@@ -48,6 +49,7 @@ bun run check       # Svelte type-checking (svelte-check)
 ## 4. Architecture & Key Features
 
 ### Data Layer
+
 - **Self-contained Unicode Dataset**: Pre-generated static JSON containing curated symbols (~3,000–5,000 glyphs across standard Unicode blocks: Arrows, Dingbats, Box Drawing, Geometric Shapes, Math Operators, Currency, Emojis/Pictographs).
 - **Per-Glyph Metadata**:
   - `char`: The character itself (e.g., `★`)
@@ -62,9 +64,11 @@ bun run check       # Svelte type-checking (svelte-check)
   - `keywords`: Array of search terms and synonyms
 
 ### Search Engine
+
 - **In-Memory Client-side Search**: Instant filtering by character name, codepoint, decimal ID, or keyword. Zero external server latency.
 
 ### User Interface
+
 - **Responsive Layout**: Mobile-first design optimized for touch and desktop keyboard navigation.
 - **Copy Mechanism**: 1-click copy with toast confirmation and format options (Character, HTML Entity, CSS Escape, Unicode Codepoint).
 - **Glyph Inspector / Detail View**:
