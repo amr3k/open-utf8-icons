@@ -207,14 +207,22 @@ describe("scoreEntry", () => {
     expect(scoreEntry(star, "9733", codepointOf("9733"))).toBe(620);
   });
 
-  test("scores name, word, and keyword prefixes in that order", () => {
+  test("scores exact name, word, and keyword tiers in that order", () => {
     const star = entries.find((entry) => entry.glyph === blackStar)!;
     const shooting = entries.find((entry) => entry.glyph === shootingStar)!;
+    const asteriskEntry = entries.find((entry) => entry.glyph === asterisk)!;
 
-    expect(scoreEntry(star, "black star", codepointOf("black star"))).toBe(500);
-    expect(scoreEntry(star, "black", codepointOf("black"))).toBe(500);
-    expect(scoreEntry(shooting, "star", codepointOf("star"))).toBe(400);
+    expect(scoreEntry(star, "black star", codepointOf("black star"))).toBe(550);
+    expect(scoreEntry(star, "star", codepointOf("star"))).toBe(500);
+    expect(scoreEntry(shooting, "star", codepointOf("star"))).toBe(500);
+    expect(scoreEntry(asteriskEntry, "star", codepointOf("star"))).toBe(350);
     expect(scoreEntry(star, "fav", codepointOf("fav"))).toBe(300);
+  });
+
+  test("scores name and word prefixes below exact tiers", () => {
+    const star = entries.find((entry) => entry.glyph === blackStar)!;
+    expect(scoreEntry(star, "bl", codepointOf("bl"))).toBe(450);
+    expect(scoreEntry(star, "sta", codepointOf("sta"))).toBe(400);
   });
 
   test("scores substring and codepoint prefixes", () => {
@@ -237,7 +245,7 @@ describe("scoreEntry", () => {
     const flag = entries.find((entry) => entry.glyph === zimbabweFlag)!;
     expect(scoreEntry(flag, "u+1f1ff", codepointOf("u+1f1ff"))).toBe(600);
     expect(scoreEntry(flag, "127487", codepointOf("127487"))).toBe(620);
-    expect(scoreEntry(flag, "zw", codepointOf("zw"))).toBe(300);
+    expect(scoreEntry(flag, "zw", codepointOf("zw"))).toBe(350);
   });
 
   test("returns null when nothing matches", () => {
@@ -269,13 +277,15 @@ describe("searchGlyphs", () => {
     ]);
   });
 
-  test("ties keep dataset order (stable sort)", () => {
-    // Both WHITE STAR and SHOOTING STAR match "star" at word-prefix score;
-    // WHITE STAR comes first because it appears first in the dataset.
+  test("equal scores prefer shorter names, then dataset order", () => {
     const results = searchGlyphs(entries, "star");
+    // BLACK STAR, WHITE STAR, and SHOOTING STAR all match the complete word
+    // "star" with the same score. SHOOTING STAR has the longest name, so the
+    // two 10-char names win; between them dataset order decides.
     expect(results.indexOf(whiteStar)).toBeLessThan(
       results.indexOf(shootingStar),
     );
+    expect(results.indexOf(blackStar)).toBeLessThan(results.indexOf(whiteStar));
   });
 
   test("finds glyphs by exact character", () => {

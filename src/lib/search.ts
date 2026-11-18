@@ -9,9 +9,14 @@
  * Matching strategy (highest signal first):
  * - exact character match (typing the glyph itself)
  * - exact code point match (`U+2605`, `2605`, `0x2605`, or decimal `9733`)
- * - name / keyword prefix and substring matches
+ * - exact name / complete name-word / exact keyword matches
+ * - name / word / keyword prefix matches
+ * - name / keyword substring matches
  * - code point prefix matches (`26`, `973`)
- * - greedy subsequence ("fuzzy") matching over names and keywords
+ * - greedy subsequence ("fuzzy") matching over names
+ *
+ * Results sort by descending score; equal scores prefer shorter (more
+ * canonical) names; remaining ties keep dataset order (stable sort).
  */
 
 import type { Glyph } from "./data/types.js";
@@ -126,7 +131,7 @@ export function fuzzyScore(haystack: string, needle: string): number | null {
   const span = last - first + 1;
   const compactness = needle.length / span;
   const lengthPenalty = Math.min(haystack.length, 40) / 40;
-  const gapPenalty = Math.min(gaps * 4, 20);
+  const gapPenalty = Math.min(gaps * 2, 20);
   // A real subsequence match always scores at least 1, so callers can treat
   // 0/null cleanly (0 is reserved for the empty needle).
   return Math.max(1, Math.round(100 * compactness * lengthPenalty) - gapPenalty);
@@ -136,8 +141,11 @@ export function fuzzyScore(haystack: string, needle: string): number | null {
 const SCORE_CHAR_EXACT = 1000;
 const SCORE_DEC_EXACT = 620;
 const SCORE_HEX_EXACT = 600;
-const SCORE_NAME_PREFIX = 500;
+const SCORE_NAME_EXACT = 550;
+const SCORE_WORD_EXACT = 500;
+const SCORE_NAME_PREFIX = 450;
 const SCORE_WORD_PREFIX = 400;
+const SCORE_KEYWORD_EXACT = 350;
 const SCORE_KEYWORD_PREFIX = 300;
 const SCORE_NAME_CONTAINS = 250;
 const SCORE_KEYWORD_CONTAINS = 150;
@@ -189,7 +197,13 @@ export function scoreEntry(
   const singleWord = !query.includes(" ");
   let text = 0;
 
-  if (entry.nameLower.startsWith(query)) {
+  if (entry.nameLower === query) {
+    text = SCORE_NAME_EXACT;
+  } else if (entry.nameWords.some((word) => word === query)) {
+    text = SCORE_WORD_EXACT;
+  } else if (singleWord && keywords.some((word) => word === query)) {
+    text = SCORE_KEYWORD_EXACT;
+  } else if (entry.nameLower.startsWith(query)) {
     text = SCORE_NAME_PREFIX;
   } else if (entry.nameWords.some((word) => word.startsWith(query))) {
     text = SCORE_WORD_PREFIX;
@@ -254,6 +268,10 @@ export function searchGlyphs(
     }
   }
 
-  hits.sort((a, b) => b.score - a.score);
+  // Sort by score; equal scores prefer shorter (more canonical) names, and
+  // remaining ties keep dataset order (Array#sort is stable).
+  hits.sort(
+    (a, b) => b.score - a.score || a.glyph.name.length - b.glyph.name.length,
+  );
   return hits.slice(0, Math.min(hits.length, limit)).map((hit) => hit.glyph);
 }
