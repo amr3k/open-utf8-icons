@@ -7,12 +7,19 @@
  * mount, so the server render is always banner-free and hydration is stable.
  */
 
+import { MediaQuery } from "svelte/reactivity";
 import {
   INSTALL_DISMISSED_KEY,
   isIosDevice,
   shouldOfferInstall,
   type InstallOutcome,
 } from "./pwa.js";
+
+/** Touch-first surfaces only; desktop browsers keep their own install UI. */
+const coarsePointer = new MediaQuery("(pointer: coarse)");
+
+/** The app is running from a home-screen install rather than a tab. */
+const standaloneDisplay = new MediaQuery("(display-mode: standalone)");
 
 class PwaManager {
   /** A native install prompt is available (Chromium). */
@@ -28,7 +35,7 @@ class PwaManager {
   ios = $state(false);
 
   /** Only offer installation on touch-first (mobile/tablet) surfaces. */
-  mobile = $state(false);
+  mobile = $derived(coarsePointer.current);
 
   /** Whether the install banner should be visible right now. */
   banner = $derived(
@@ -67,10 +74,8 @@ class PwaManager {
     if (typeof window === "undefined" || this.#initialized) return;
 
     this.dismissed = this.#readDismissed();
-    this.mobile = window.matchMedia("(pointer: coarse)").matches;
     this.installed =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      navigator.standalone === true;
+      standaloneDisplay.current || navigator.standalone === true;
     this.ios =
       !this.installed &&
       isIosDevice(

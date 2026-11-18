@@ -3,13 +3,9 @@
    * Light / Dark / Auto segmented control. Labels collapse to glyph-only on
    * small screens; every state exposes aria-pressed and a descriptive label.
    */
+  import PillButton from "#lib/components/PillButton.svelte";
   import { theme, type ThemeMode } from "#lib/theme.svelte.js";
-  import {
-    PILL_ACTIVE,
-    PILL_BUTTON,
-    PILL_GROUP,
-    PILL_INACTIVE,
-  } from "#lib/ui.js";
+  import { PILL_GROUP } from "#lib/ui.js";
 
   interface Props {
     class?: string;
@@ -26,21 +22,18 @@
 
 <div class="{PILL_GROUP} {className}" role="group" aria-label="Theme">
   {#each MODES as { mode, icon, label } (mode)}
-    <button
-      type="button"
+    <PillButton
+      active={theme.mode === mode}
       onclick={() => theme.setMode(mode)}
-      aria-label={mode === "system"
+      ariaLabel={mode === "system"
         ? "System preference theme"
         : `${label} mode`}
-      aria-pressed={theme.mode === mode}
       title={mode === "system"
         ? "Follow system preference"
         : `Switch to ${label} mode`}
-      class="{PILL_BUTTON} {theme.mode === mode ? PILL_ACTIVE : PILL_INACTIVE}"
     >
-      <span class="text-sm leading-none sm:mr-1" aria-hidden="true">{icon}</span
-      >
+      <span class="text-sm leading-none sm:mr-1" aria-hidden="true">{icon}</span>
       <span class="hidden sm:inline">{label}</span>
-    </button>
+    </PillButton>
   {/each}
 </div>

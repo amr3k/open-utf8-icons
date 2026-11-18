@@ -1,10 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import {
-  getNextThemeMode,
   getThemeColor,
-  getThemeIcon,
   resolveTheme,
   THEME_COLORS,
+  THEME_STORAGE_KEY,
 } from "./theme-utils.js";
 
 describe("theme utilities", () => {
@@ -20,18 +19,8 @@ describe("theme utilities", () => {
     expect(resolveTheme("system", true)).toBe("dark");
   });
 
-  test("getNextThemeMode cycles correctly through system -> light -> dark -> system", () => {
-    expect(getNextThemeMode("system")).toBe("light");
-    expect(getNextThemeMode("light")).toBe("dark");
-    expect(getNextThemeMode("dark")).toBe("system");
-    // @ts-expect-error test fallback default
-    expect(getNextThemeMode("unknown")).toBe("system");
-  });
-
-  test("getThemeIcon returns proper native UTF-8 icons without external dependencies", () => {
-    expect(getThemeIcon("light")).toBe("☀");
-    expect(getThemeIcon("dark")).toBe("☾");
-    expect(getThemeIcon("system")).toBe("◑");
+  test("storage keys stay stable across releases", () => {
+    expect(THEME_STORAGE_KEY).toBe("theme");
   });
 
   test("getThemeColor matches the document surfaces", () => {

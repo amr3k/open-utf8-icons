@@ -6,14 +6,10 @@
    * count.
    */
   import { COPY_FORMATS, type CopyFormat } from "#lib/copy.js";
+  import PillButton from "#lib/components/PillButton.svelte";
   import { formatCount } from "#lib/format.js";
   import type { SearchStatus } from "#lib/search.js";
-  import {
-    PILL_ACTIVE,
-    PILL_BUTTON,
-    PILL_GROUP,
-    PILL_INACTIVE,
-  } from "#lib/ui.js";
+  import { PILL_GROUP } from "#lib/ui.js";
 
   interface Props {
     query?: string;
@@ -128,17 +124,13 @@
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div class={PILL_GROUP} role="group" aria-label="Quick copy format">
       {#each COPY_FORMATS as format (format.id)}
-        <button
-          type="button"
+        <PillButton
+          active={copyFormat === format.id}
           onclick={() => (copyFormat = format.id)}
-          aria-pressed={copyFormat === format.id}
           title={format.hint}
-          class="{PILL_BUTTON} {copyFormat === format.id
-            ? PILL_ACTIVE
-            : PILL_INACTIVE}"
         >
           <span class="tabular-nums">{format.label}</span>
-        </button>
+        </PillButton>
       {/each}
     </div>
 

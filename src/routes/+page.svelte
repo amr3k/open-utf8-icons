@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import SearchBar from "#lib/components/SearchBar.svelte";
   import BlockFilter from "#lib/components/BlockFilter.svelte";
   import GlyphGrid from "#lib/components/GlyphGrid.svelte";
@@ -12,7 +14,7 @@
     glyphFromHash,
     glyphs,
   } from "#lib/dataset.js";
-  import { glyphHash, parseGlyphHash } from "#lib/permalink.js";
+  import { glyphHash } from "#lib/permalink.js";
   import { searchGlyphs, type SearchStatus } from "#lib/search.js";
   import { formatCount } from "#lib/format.js";
   import {
@@ -31,24 +33,26 @@
   let block = $state<string | null>(null);
   let copyFormat = $state<CopyFormat>("char");
   let view = $state<LibraryView>("all");
-  /** Glyph shown in the inspector drawer, or `null` when closed. */
-  let selected = $state<Glyph | null>(null);
 
   /**
-   * Last URL we intentionally synced. Some browsers fire `popstate` right
-   * after load; comparing hrefs keeps that from closing a shared permalink.
+   * Hydration always starts with the drawer closed, so server and client
+   * markup match. The fragment is resolved on the client only, against the
+   * bundled dataset.
    */
-  let lastHref = "";
+  let hydrated = $state(false);
 
   /**
-   * Open the inspector from a shareable permalink. Hydration always starts
-   * closed, so server and client markup match; the fragment is resolved here,
-   * on the client only, against the bundled dataset.
+   * Glyph shown in the inspector drawer. The URL fragment is the single
+   * source of truth: opening and closing are shallow SvelteKit navigations,
+   * so Back and Forward walk the inspected glyphs like any other history —
+   * and a shared permalink opens the same drawer on load.
    */
+  const selected = $derived(
+    hydrated ? (glyphFromHash(page.url.hash) ?? null) : null,
+  );
+
   onMount(() => {
-    const glyph = glyphFromHash(window.location.hash);
-    if (glyph !== undefined) selected = glyph;
-    lastHref = window.location.href;
+    hydrated = true;
   });
 
   /** Favorited code point keys — a Set keeps per-card lookups O(1). */
@@ -95,23 +99,19 @@
 
   /** Context-aware empty state for the grid. */
   let emptyState = $derived.by(() => {
-    if (query.trim() !== "" || block !== null) {
-      return {
-        title: "No glyphs match your search.",
-        hint: "Try a name like arrow, a keyword like favorite, or a code point like u+2605.",
-      };
-    }
-    if (view === "favorites") {
-      return {
-        title: "No favorites yet.",
-        hint: "Open any glyph and select ☆ to keep it here.",
-      };
-    }
-    if (view === "recent") {
-      return {
-        title: "No recent copies yet.",
-        hint: "Copy any glyph — your most recent copies land here.",
-      };
+    if (query.trim() === "" && block === null) {
+      if (view === "favorites") {
+        return {
+          title: "No favorites yet.",
+          hint: "Open any glyph and select ☆ to keep it here.",
+        };
+      }
+      if (view === "recent") {
+        return {
+          title: "No recent copies yet.",
+          hint: "Copy any glyph — your most recent copies land here.",
+        };
+      }
     }
     return {
       title: "No glyphs match your search.",
@@ -145,46 +145,26 @@
 
   /**
    * Open the inspector and add a shareable history entry for this glyph.
-   * `pushState` (rather than assigning `location.hash`) avoids scrolling and
-   * keeps SvelteKit's existing history state intact.
+   * The navigation is shallow, so no `load` function re-runs and the scroll
+   * position and focus stay where they are.
    */
   function inspectGlyph(glyph: Glyph) {
-    selected = glyph;
     const hash = glyphHash(glyph);
-    if (window.location.hash !== hash) {
-      history.pushState(history.state, "", hash);
-    }
-    lastHref = window.location.href;
-  }
-
-  /** Drop a glyph fragment without adding a history entry. */
-  function clearGlyphFragment() {
-    if (parseGlyphHash(window.location.hash) === null) return;
-    history.replaceState(
-      history.state,
-      "",
-      `${window.location.pathname}${window.location.search}`,
-    );
-    lastHref = window.location.href;
-  }
-
-  /** Dismissal from the drawer itself must not come back on Back. */
-  function closeInspector() {
-    selected = null;
-    clearGlyphFragment();
+    if (page.url.hash === hash) return;
+    void goto(hash, { state: page.state, shallow: true });
   }
 
   /**
-   * Browser Back/Forward only ever closes the drawer — it never opens one.
-   * Landing on an older glyph entry also scrubs that stale fragment so a
-   * reload cannot resurrect a drawer the user already dismissed.
+   * Drop the glyph fragment without adding a history entry, so dismissing
+   * the drawer never comes back on Back.
    */
-  function handlePopState() {
-    // Ignore a no-op history event (e.g. Safari's post-load popstate).
-    if (window.location.href === lastHref) return;
-    lastHref = window.location.href;
-    selected = null;
-    clearGlyphFragment();
+  function closeInspector() {
+    if (page.url.hash === "") return;
+    void goto(`${page.url.pathname}${page.url.search}`, {
+      state: page.state,
+      shallow: true,
+      replace: true,
+    });
   }
 
   /** Switch collections; the block chip belongs to the previous view. */
@@ -197,6 +177,20 @@
     query = "";
     block = null;
     view = "all";
+  }
+
+  /** Report a render failure without taking the directory down with it. */
+  function reportError(error: unknown) {
+    console.error("[open-utf8-icons] render error:", error);
+  }
+
+  /**
+   * A drawer that throws is removed by its boundary for the rest of the
+   * session; the toast is the only trace the visitor gets, so say so.
+   */
+  function reportInspectorError(error: unknown) {
+    reportError(error);
+    toasts.show("✕ The glyph inspector failed to render");
   }
 </script>
 
@@ -253,29 +247,62 @@
   </div>
 
   <div class="rise-in" style="animation-delay: 180ms">
-    <!-- #key resets the grid's render window when the query/filter changes, but
-         not when results merely reorder (e.g. recents after a copy) -->
-    {#key `${view}|${block ?? ""}|${query}`}
-      <GlyphGrid
-        {results}
-        format={copyFormat}
-        favorites={favoriteKeys}
-        oncopy={handleCopy}
-        oninspect={inspectGlyph}
-        onclear={clearAll}
-        emptyTitle={emptyState.title}
-        emptyHint={emptyState.hint}
-      />
-    {/key}
+    <svelte:boundary onerror={reportError}>
+      <!-- #key resets the grid's render window when the query/filter changes,
+           but not when results merely reorder (e.g. recents after a copy) -->
+      {#key `${view}|${block ?? ""}|${query}`}
+        <GlyphGrid
+          {results}
+          format={copyFormat}
+          favorites={favoriteKeys}
+          oncopy={handleCopy}
+          oninspect={inspectGlyph}
+          onclear={clearAll}
+          emptyTitle={emptyState.title}
+          emptyHint={emptyState.hint}
+        />
+      {/key}
+
+      {#snippet failed(_error, reset)}
+        <div
+          class="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50/60 py-16 text-center dark:border-zinc-700 dark:bg-zinc-900/30"
+        >
+          <div
+            class="text-4xl text-zinc-300 dark:text-zinc-700"
+            aria-hidden="true"
+          >
+            ⚠
+          </div>
+          <p class="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            The grid failed to render.
+          </p>
+          <p
+            class="mt-1 max-w-sm text-pretty text-xs text-zinc-500 dark:text-zinc-400"
+          >
+            Your search and filters are still here — retry to rebuild the
+            results.
+          </p>
+          <button
+            type="button"
+            onclick={reset}
+            class="mt-5 inline-flex h-9 items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-4 text-xs font-medium text-zinc-700 shadow-2xs transition hover:bg-zinc-50 hover:text-zinc-900 active:scale-[0.96] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+          >
+            <span class="text-sm leading-none" aria-hidden="true">↻</span>
+            <span>Retry</span>
+          </button>
+        </div>
+      {/snippet}
+    </svelte:boundary>
   </div>
 </main>
 
-<GlyphInspector
-  glyph={selected}
-  favorite={selected !== null && favoriteKeys.has(selected.codepoint)}
-  onclose={closeInspector}
-  oncopy={handleCopy}
-  onfavorite={handleToggleFavorite}
-/>
-
-<svelte:window onpopstate={handlePopState} />
+<!-- A drawer that throws is removed, but the directory keeps working. -->
+<svelte:boundary onerror={reportInspectorError}>
+  <GlyphInspector
+    glyph={selected}
+    favorite={selected !== null && favoriteKeys.has(selected.codepoint)}
+    onclose={closeInspector}
+    oncopy={handleCopy}
+    onfavorite={handleToggleFavorite}
+  />
+</svelte:boundary>

@@ -73,6 +73,3 @@ export function countBlocks(glyphs: readonly Glyph[]): BlockStat[] {
   }
   return [...counts.entries()].map(([block, count]) => ({ block, count }));
 }
-
-/** Blocks in first-appearance (curated dataset) order. */
-export const blockStats: readonly BlockStat[] = countBlocks(dataset.glyphs);

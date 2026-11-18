@@ -3,14 +3,10 @@
    * Collection switcher (Phase 4): All / ★ Favorites / 🕘 Recent. Renders as
    * the same segmented pill control used elsewhere, with optional counts.
    */
+  import PillButton from "#lib/components/PillButton.svelte";
   import type { LibraryView } from "#lib/library.js";
   import { formatCount } from "#lib/format.js";
-  import {
-    PILL_ACTIVE,
-    PILL_BUTTON,
-    PILL_GROUP,
-    PILL_INACTIVE,
-  } from "#lib/ui.js";
+  import { PILL_GROUP } from "#lib/ui.js";
 
   interface Props {
     view: LibraryView;
@@ -46,12 +42,7 @@
 <div class={PILL_GROUP} role="group" aria-label="Glyph collection">
   {#each VIEWS as item (item.id)}
     {@const count = item.count(favoritesCount, recentCount)}
-    <button
-      type="button"
-      onclick={() => onselect(item.id)}
-      aria-pressed={view === item.id}
-      class="{PILL_BUTTON} {view === item.id ? PILL_ACTIVE : PILL_INACTIVE}"
-    >
+    <PillButton active={view === item.id} onclick={() => onselect(item.id)}>
       {#if item.icon}
         <span class="mr-1 text-xs leading-none" aria-hidden="true"
           >{item.icon}</span
@@ -63,6 +54,6 @@
           >{formatCount(count)}</span
         >
       {/if}
-    </button>
+    </PillButton>
   {/each}
 </div>
