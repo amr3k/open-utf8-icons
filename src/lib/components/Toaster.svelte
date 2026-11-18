@@ -1,18 +1,21 @@
 <script lang="ts">
   /**
    * Renders the global toast stack (one instance in the root layout).
+   * The stack lifts above the install banner when it is visible — both
+   * are fixed layers, so the offset change causes no layout shift.
    * Pure UTF-8 feedback glyphs (✓ / ✕) come from the toast text itself.
    */
   import { cubicOut } from "svelte/easing";
   import { prefersReducedMotion } from "svelte/motion";
   import { fly } from "svelte/transition";
+  import { pwa } from "#lib/pwa.svelte.js";
   import { toasts } from "#lib/toast.svelte.js";
 
   const reducedMotion = $derived(prefersReducedMotion.current);
 </script>
 
 <div
-  class="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex flex-col items-center gap-2 px-4 pb-[env(safe-area-inset-bottom)]"
+  class="pointer-events-none fixed inset-x-0 {pwa.banner ? 'bottom-24' : 'bottom-6'} z-50 flex flex-col items-center gap-2 px-4 pb-[env(safe-area-inset-bottom)]"
   aria-live="polite"
 >
   {#each toasts.items as toast (toast.id)}

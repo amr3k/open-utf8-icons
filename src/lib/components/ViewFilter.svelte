@@ -59,7 +59,9 @@
       {/if}
       <span>{item.label}</span>
       {#if count !== null && count > 0}
-        <span class="ml-1 tabular-nums opacity-60">{formatCount(count)}</span>
+        <span class="ml-1 tabular-nums text-zinc-600 dark:text-zinc-400"
+          >{formatCount(count)}</span
+        >
       {/if}
     </button>
   {/each}

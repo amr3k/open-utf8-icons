@@ -43,7 +43,7 @@
       class="w-full truncate text-[10px] font-medium text-zinc-500 dark:text-zinc-400"
       >{glyph.name}</span
     >
-    <span class="text-[10px] tabular-nums text-zinc-500 dark:text-zinc-500"
+    <span class="text-[10px] tabular-nums text-zinc-500 dark:text-zinc-400"
       >{glyph.codepoint}</span
     >
   </button>

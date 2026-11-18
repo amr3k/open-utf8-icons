@@ -73,7 +73,11 @@ bun run preview
 
 The app is powered by a self-contained, pre-generated dataset — [`src/lib/data/icons.json`](src/lib/data/icons.json) — containing **4,021 glyphs** across 22 curated categories, extracted from **Unicode 16.0.0**.
 
-Every glyph ships with full developer metadata: character, official Unicode name, code point (`U+XXXX`), decimal value, HTML entities (decimal + hex), CSS escape, JS escape, Unicode category, script, block and curated search keywords. Country flags are included as regional-indicator emoji sequences (`🇺🇸`).
+Every glyph resolves to full developer metadata: character, official Unicode name, code point (`U+XXXX`), decimal value, HTML entities (decimal + hex), CSS escape, JS escape, Unicode category, script, block and curated search keywords. Country flags are included as regional-indicator emoji sequences (`🇺🇸`).
+
+### Packed wire format
+
+The committed artifact is a *packed* dataset (schema v2) rather than one object per glyph: it stores one row per glyph (`hex|name|category|script|block|keywords`), keeps block/category/script names in small dictionaries, drops keywords the glyph name already covers, and omits every representation that can be derived from the code points. [`src/lib/data/unpack.ts`](src/lib/data/unpack.ts) expands it once at load, so the browser receives **~164 kB raw / ~40 kB gzip instead of ~1.15 MB** and parses a compact JSON payload instead of a megabyte of JavaScript object literals.
 
 ### Regenerating the dataset
 
@@ -83,13 +87,12 @@ bun run generate:icons --force                      # re-download the UCD source
 bun run generate:icons --unicode 17.0.0             # extract from a newer Unicode version
 bun run generate:icons --ucd ./UnicodeData.txt      # use a local/offline UnicodeData file
 bun run generate:icons --scripts ./Scripts.txt      # use a local/offline Scripts file
-bun fmt src/lib/data/icons.json                     # match the committed JSON formatting
 ```
 
 - **Source of truth**: the official UCD [`UnicodeData.txt`](https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt) (names, categories) and [`Scripts.txt`](https://www.unicode.org/Public/16.0.0/ucd/Scripts.txt) (script property) — downloaded once, then cached in `.cache/` (git-ignored), so repeat runs and CI work offline.
 - **Curation**: the curated block list lives in `scripts/lib/blocks.ts`, hand-picked search synonyms in `scripts/lib/keywords.ts`, and flag regions in `scripts/lib/flags.ts`. Script ranges are parsed in `scripts/lib/unicode-scripts.ts`.
-- **Output**: formatted JSON (~1.7 MB raw / ~178 kB gzip; the whitespace compresses away). The generated file is committed, so production builds and CI never need network access; Cloudflare serves it compressed. If the payload ever grows too large for a single request, per-block chunked loading can be introduced without changing the pipeline.
-- **Invariants**: `bun test` validates the committed dataset against the pure formatter helpers (`scripts/lib/formats.ts`) and checks every glyph has a script, so representation drift fails CI.
+- **Output**: minified packed JSON (~164 kB raw / ~40 kB gzip). The generated file is committed, so production builds and CI never need network access; Cloudflare serves it compressed. The generator prints the expanded-vs-packed saving on every run.
+- **Invariants**: `bun test` validates the committed artifact end to end — it decodes the packed rows, checks dictionary indexes, and re-derives every developer representation with the pure helpers in [`src/lib/data/derive.ts`](src/lib/data/derive.ts), so representation drift fails CI.
 
 ---
 
@@ -97,10 +100,10 @@ bun fmt src/lib/data/icons.json                     # match the committed JSON f
 
 The homepage is a fully offline, client-side directory over the dataset — no network calls, no search index downloads.
 
-- **Instant search** (pure `src/lib/search.ts`, zero dependencies): exact glyph / name / word / keyword matches, name & keyword prefixes and substrings, code point lookups in every notation (`u+2605`, `0x2605`, `2605`, `9733`), code point prefixes, and greedy fuzzy subsequences over names **and keywords** (word-start and prefix-anchored matches score highest). Equal scores prefer shorter, more canonical names. Warm cost over the full 4,021-glyph index: **2–6 ms per keystroke**.
+- **Instant search** (pure `src/lib/search.ts`, zero dependencies): exact glyph / name / word / keyword matches, name & keyword prefixes and substrings, code point lookups in every notation (`u+2605`, `0x2605`, `2605`, `9733`), code point prefixes, and greedy fuzzy subsequences over names **and keywords** (word-start and prefix-anchored matches score highest). Equal scores prefer shorter, more canonical names. The per-glyph index is built lazily on the first keystroke, so the initial page load never pays for it; warm cost over the full 4,021-glyph index is **2–6 ms per keystroke**.
 - **Keyboard shortcuts**: `/` focuses the search field from anywhere, `Esc` clears it from anywhere (or blurs when already empty).
 - **Category browser**: horizontally scrollable block chips with live counts; the filter composes with search.
-- **Windowed grid**: cards render in 96-glyph pages, grown by an IntersectionObserver sentinel as you scroll, and each card uses `content-visibility: auto` so off-screen tiles skip painting entirely — smooth scrolling with zero virtualization dependencies. Every match stays reachable — no result truncation.
+- **Windowed grid**: cards render in 48-glyph pages, grown by an IntersectionObserver sentinel as you scroll, and each card uses `content-visibility: auto` so off-screen tiles skip painting entirely — smooth scrolling with zero virtualization dependencies. Every match stays reachable — no result truncation.
 - **Quick copy**: the 📋 corner button on any glyph copies it in the selected format (Char / HTML / CSS / `U+`), confirmed by a toast — Web Clipboard API with a legacy `execCommand` fallback.
 
 ---
@@ -125,7 +128,7 @@ Clicking any glyph opens an accessible slide-over inspector (native `<dialog>` �
 - **Manifest**: [`static/manifest.webmanifest`](static/manifest.webmanifest) declares `open-utf8-icons`, a `/` scope, standalone display, categories, light theme/background colors and 192/512 px any + maskable icons (plus a 180 px `apple-touch-icon`), all rendered from the `ツ` brand mark.
 - **Service worker** ([`src/service-worker/index.ts`](src/service-worker/index.ts), strategies in [`src/lib/sw-policy.ts`](src/lib/sw-policy.ts)): on install it precaches the app shell, every static asset (manifest, icons, favicon) and the immutable JS bundle — which already contains the full Unicode dataset, so offline search needs no extra request. Navigations are network-first, even for the cached root, with the cached shell as fallback; immutable build output is cache-first and other same-origin GETs revalidate in the background. Each deployment gets a versioned cache; older caches are pruned on activation. The worker is disabled during `vite dev` so HMR stays fresh.
 - **Offline fallback**: a prerendered `/offline` page is precached and served for navigations that have no cached page, with a retry action. Prerendered asset URLs are root-relative, so the fallback renders correctly even when it answers a nested offline navigation. An unobtrusive status pill appears while `navigator.onLine` is false and verifies Cache Storage holds the shell before promising cached search, inspection and copying.
-- **Install prompt**: Chromium's `beforeinstallprompt` is captured by an inline bootstrap before hydration and surfaced as a small, dismissible inline banner on touch-first devices; iOS gets the equivalent Share → Add to Home Screen hint. Dismissals are remembered in `localStorage` (`utf8:install-dismissed`), and the banner never appears in standalone mode.
+- **Install prompt**: Chromium's `beforeinstallprompt` is captured by an inline bootstrap before hydration and surfaced as a small, dismissible floating banner at the bottom of the screen on touch-first devices (a fixed layer, so it can never shift the page); iOS gets the equivalent Share → Add to Home Screen hint. Dismissals are remembered in `localStorage` (`utf8:install-dismissed`), and the banner never appears in standalone mode.
 
 ---
 
