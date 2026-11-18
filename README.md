@@ -113,6 +113,7 @@ Clicking any glyph opens an accessible slide-over inspector (native `<dialog>` �
 - **Cross-font rendering grid**: the same glyph in System UI, Sans-Serif, Serif and Monospace stacks, so you can spot missing-glyph fallbacks before shipping.
 - **Every developer format, one click away**: character, decimal & hex HTML entities, CSS escape, JavaScript escape, URL-encoded UTF-8, and the `U+` code point.
 - **Unicode attributes**: category (code + friendly label), block, script, decimal and hex values.
+- **Shareable permalinks**: every inspection adds a fragment entry (`#U+2605`, or `#U+1F1FA-U+1F1F8` for flags), so the exact glyph can be reloaded or shared. Closing the inspector scrubs the fragment in place, and Back/Forward only ever dismisses the panel instead of reviving an older glyph.
 - **Favorites & recent copies**: persisted in `localStorage` (`utf8:favorites`, `utf8:recents`), capped at 24 recent copies, and browsable from the All / ★ Favorites / 🕘 Recent switcher above the grid — no account, no server.
 
 ---

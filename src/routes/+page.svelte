@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import SearchBar from "#lib/components/SearchBar.svelte";
   import BlockFilter from "#lib/components/BlockFilter.svelte";
   import GlyphGrid from "#lib/components/GlyphGrid.svelte";
@@ -7,9 +8,11 @@
   import {
     countBlocks,
     dataset,
+    glyphFromHash,
     searchEntries,
     searchEntryByCodepoint,
   } from "#lib/dataset.js";
+  import { glyphHash, parseGlyphHash } from "#lib/permalink.js";
   import { searchGlyphs, type SearchStatus } from "#lib/search.js";
   import { formatCount } from "#lib/format.js";
   import {
@@ -30,6 +33,23 @@
   let view = $state<LibraryView>("all");
   /** Glyph shown in the inspector drawer, or `null` when closed. */
   let selected = $state<Glyph | null>(null);
+
+  /**
+   * Last URL we intentionally synced. Some browsers fire `popstate` right
+   * after load; comparing hrefs keeps that from closing a shared permalink.
+   */
+  let lastHref = "";
+
+  /**
+   * Open the inspector from a shareable permalink. Hydration always starts
+   * closed, so server and client markup match; the fragment is resolved here,
+   * on the client only, against the bundled dataset.
+   */
+  onMount(() => {
+    const glyph = glyphFromHash(window.location.hash);
+    if (glyph !== undefined) selected = glyph;
+    lastHref = window.location.href;
+  });
 
   /** Favorited code point keys — a Set keeps per-card lookups O(1). */
   let favoriteKeys = $derived(new Set(library.favorites));
@@ -125,6 +145,50 @@
     );
   }
 
+  /**
+   * Open the inspector and add a shareable history entry for this glyph.
+   * `pushState` (rather than assigning `location.hash`) avoids scrolling and
+   * keeps SvelteKit's existing history state intact.
+   */
+  function inspectGlyph(glyph: Glyph) {
+    selected = glyph;
+    const hash = glyphHash(glyph);
+    if (window.location.hash !== hash) {
+      history.pushState(history.state, "", hash);
+    }
+    lastHref = window.location.href;
+  }
+
+  /** Drop a glyph fragment without adding a history entry. */
+  function clearGlyphFragment() {
+    if (parseGlyphHash(window.location.hash) === null) return;
+    history.replaceState(
+      history.state,
+      "",
+      `${window.location.pathname}${window.location.search}`,
+    );
+    lastHref = window.location.href;
+  }
+
+  /** Dismissal from the drawer itself must not come back on Back. */
+  function closeInspector() {
+    selected = null;
+    clearGlyphFragment();
+  }
+
+  /**
+   * Browser Back/Forward only ever closes the drawer — it never opens one.
+   * Landing on an older glyph entry also scrubs that stale fragment so a
+   * reload cannot resurrect a drawer the user already dismissed.
+   */
+  function handlePopState() {
+    // Ignore a no-op history event (e.g. Safari's post-load popstate).
+    if (window.location.href === lastHref) return;
+    lastHref = window.location.href;
+    selected = null;
+    clearGlyphFragment();
+  }
+
   /** Switch collections; the block chip belongs to the previous view. */
   function selectView(next: LibraryView) {
     view = next;
@@ -199,7 +263,7 @@
         format={copyFormat}
         favorites={favoriteKeys}
         oncopy={handleCopy}
-        oninspect={(glyph) => (selected = glyph)}
+        oninspect={inspectGlyph}
         onclear={clearAll}
         emptyTitle={emptyState.title}
         emptyHint={emptyState.hint}
@@ -211,7 +275,9 @@
 <GlyphInspector
   glyph={selected}
   favorite={selected !== null && favoriteKeys.has(selected.codepoint)}
-  onclose={() => (selected = null)}
+  onclose={closeInspector}
   oncopy={handleCopy}
   onfavorite={handleToggleFavorite}
 />
+
+<svelte:window onpopstate={handlePopState} />
