@@ -128,6 +128,42 @@ Clicking any glyph opens an accessible slide-over inspector (native `<dialog>` �
 
 ---
 
+## 🎨 Branding, SEO & Social Assets
+
+The brand mark is `ツ` (`U+30C4`), drawn from the same system font stack as the header — no bespoke icon packs or SVG sprites.
+
+![open-utf8-icons social card](static/og-image.png)
+
+- **Favicon set**: [`static/favicon.svg`](static/favicon.svg) is the crisp vector source for modern browsers; `favicon-16.png` and `favicon-32.png` provide pixel-perfect PNG fallbacks, while `favicon.ico` covers legacy tab UIs. The 180 px `apple-touch-icon` and the 192/512 px PWA icons handle home screens.
+- **Social card**: [`static/og-image.png`](static/og-image.png) is a 1200×630 Open Graph / Twitter card highlighting the `ツ` mark, the glyph directory and `utf8.a3k.me`. Its source lives in [`scripts/assets/og-image.svg`](scripts/assets/og-image.svg); the render command is documented at the top of the SVG.
+- **Metadata**: [`src/app.html`](src/app.html) owns the favicon, manifest, application-name and theme-color shell; [`src/routes/+layout.svelte`](src/routes/+layout.svelte) renders the description, Open Graph and Twitter `summary_large_image` tags from the tested constants in [`src/lib/seo.ts`](src/lib/seo.ts). Canonical and `og:url` are derived per route, so query strings and fragments never split the index.
+- **Browser chrome**: `theme-color` follows the resolved light/dark theme. A pre-hydration bootstrap paints the correct color before first paint, and the runtime theme manager keeps it in sync when the mode changes.
+- **Crawlers**: [`static/robots.txt`](static/robots.txt) advertises [`static/sitemap.xml`](static/sitemap.xml); the prerendered `/offline` fallback is marked `noindex`.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome — especially curated keywords, block coverage, and accessibility fixes.
+
+1. Read [`AGENTS.md`](AGENTS.md); it is the working contract for this repository.
+2. Use **Bun** only (`bun install`, `bun test`, `bun run check`, `bun fmt`). Do not add npm or npx lockfiles.
+3. Keep the icon philosophy: every UI control is a native UTF-8 glyph. No Lucide, Heroicons, FontAwesome, or custom SVG icon packs.
+4. Reach for a native browser API before adding a dependency; the dependency surface is intentionally tiny.
+5. Branch from `main` as `feat/<issue-id>-<slug>` or `fix/<issue-id>-<slug>`, and reference the issue in commits and pull requests.
+6. Before opening a pull request, run:
+
+   ```bash
+   bun test
+   bun run check
+   bun run build
+   bun fmt --check
+   ```
+
+7. If you touch the extraction pipeline, regenerate and commit `src/lib/data/icons.json` with `bun run generate:icons`.
+
+---
+
 ## 📋 Implementation Roadmap
 
 Tracked in epic issue [#1](https://github.com/amr3k/open-utf8-icons/issues/1):
@@ -137,7 +173,7 @@ Tracked in epic issue [#1](https://github.com/amr3k/open-utf8-icons/issues/1):
 - [x] **Phase 3: Core Directory & Search Interface**
 - [x] **Phase 4: Glyph Inspector & Developer Tooling**
 - [x] **Phase 5: PWA & Offline Support**
-- [ ] **Phase 6: Branding, SEO & Social Assets**
+- [x] **Phase 6: Branding, SEO & Social Assets**
 - [ ] **Phase 7: Deployment & CI/CD**
 
 ---

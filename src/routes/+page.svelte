@@ -20,6 +20,7 @@
   } from "#lib/copy.js";
   import { library } from "#lib/library.svelte.js";
   import type { LibraryView } from "#lib/library.js";
+  import { SITE_TITLE } from "#lib/seo.js";
   import { toasts } from "#lib/toast.svelte.js";
   import type { Glyph } from "#lib/data/types.js";
 
@@ -136,6 +137,10 @@
     view = "all";
   }
 </script>
+
+<svelte:head>
+  <title>{SITE_TITLE}</title>
+</svelte:head>
 
 <main class="mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-10 sm:px-6">
   <div class="mb-8">
