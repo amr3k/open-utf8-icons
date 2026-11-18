@@ -70,10 +70,9 @@
   <div
     class="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50/60 py-16 text-center dark:border-zinc-700 dark:bg-zinc-900/30"
   >
-    <div
-      class="text-4xl text-zinc-300 dark:text-zinc-700"
-      aria-hidden="true">◌</div
-    >
+    <div class="text-4xl text-zinc-300 dark:text-zinc-700" aria-hidden="true">
+      ◌
+    </div>
     <p class="mt-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
       {emptyTitle}
     </p>
