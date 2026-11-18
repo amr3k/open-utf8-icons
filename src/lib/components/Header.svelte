@@ -25,7 +25,7 @@
           <h1
             class="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
           >
-            open-utf8-icons
+            Open UTF-8 icons
           </h1>
           <span
             class="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-700 dark:text-sky-300"
