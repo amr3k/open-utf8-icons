@@ -42,13 +42,25 @@
   let hydrated = $state(false);
 
   /**
+   * The fragment the visitor can see in the address bar. A shallow navigation
+   * (how the drawer opens and closes) deliberately leaves `page.url` pointing
+   * at the rendered page — the new URL lives in `page.shallow.url` instead.
+   * Fall back to `page.url` for a shared permalink on first load, when no
+   * shallow navigation has happened yet. Using `page.url` alone here made the
+   * fragment never change on click, so the drawer never opened.
+   */
+  const currentHash = $derived(
+    page.shallow !== null ? page.shallow.url.hash : page.url.hash,
+  );
+
+  /**
    * Glyph shown in the inspector drawer. The URL fragment is the single
    * source of truth: opening and closing are shallow SvelteKit navigations,
    * so Back and Forward walk the inspected glyphs like any other history —
    * and a shared permalink opens the same drawer on load.
    */
   const selected = $derived(
-    hydrated ? (glyphFromHash(page.url.hash) ?? null) : null,
+    hydrated ? (glyphFromHash(currentHash) ?? null) : null,
   );
 
   onMount(() => {
@@ -150,7 +162,7 @@
    */
   function inspectGlyph(glyph: Glyph) {
     const hash = glyphHash(glyph);
-    if (page.url.hash === hash) return;
+    if (currentHash === hash) return;
     void goto(hash, { state: page.state, shallow: true });
   }
 
@@ -159,7 +171,7 @@
    * the drawer never comes back on Back.
    */
   function closeInspector() {
-    if (page.url.hash === "") return;
+    if (currentHash === "") return;
     void goto(`${page.url.pathname}${page.url.search}`, {
       state: page.state,
       shallow: true,
