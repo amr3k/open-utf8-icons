@@ -23,18 +23,18 @@
 
 export interface BlockRange {
   /** First code point of the range (inclusive) */
-  start: number
+  start: number;
   /** Last code point of the range (inclusive) */
-  end: number
+  end: number;
 }
 
 export interface CuratedBlock {
   /** Browsing category label stored as the glyph `block` value */
-  name: string
+  name: string;
   /** Code point ranges to include (official Unicode block ranges) */
-  ranges: BlockRange[]
+  ranges: BlockRange[];
   /** Extra individual code points merged into this category */
-  codepoints?: number[]
+  codepoints?: number[];
 }
 
 /** Ordered curation — also the glyph ordering in the generated dataset. */
@@ -43,13 +43,19 @@ export const CURATED_BLOCKS: CuratedBlock[] = [
   { name: "Supplemental Arrows-A", ranges: [{ start: 0x27f0, end: 0x27ff }] },
   { name: "Supplemental Arrows-B", ranges: [{ start: 0x2900, end: 0x297f }] },
   { name: "Supplemental Arrows-C", ranges: [{ start: 0x1f800, end: 0x1f8ff }] },
-  { name: "Miscellaneous Symbols and Arrows", ranges: [{ start: 0x2b00, end: 0x2bff }] },
+  {
+    name: "Miscellaneous Symbols and Arrows",
+    ranges: [{ start: 0x2b00, end: 0x2bff }],
+  },
   {
     name: "Mathematical Operators",
     ranges: [{ start: 0x2200, end: 0x22ff }],
     codepoints: [0xac, 0xb1, 0xd7, 0xf7],
   },
-  { name: "Supplemental Mathematical Operators", ranges: [{ start: 0x2a00, end: 0x2aff }] },
+  {
+    name: "Supplemental Mathematical Operators",
+    ranges: [{ start: 0x2a00, end: 0x2aff }],
+  },
   {
     name: "Currency Symbols",
     ranges: [{ start: 0x20a0, end: 0x20cf }],
@@ -68,25 +74,37 @@ export const CURATED_BLOCKS: CuratedBlock[] = [
   { name: "Miscellaneous Symbols", ranges: [{ start: 0x2600, end: 0x26ff }] },
   { name: "Dingbats", ranges: [{ start: 0x2700, end: 0x27bf }] },
   { name: "Emoticons", ranges: [{ start: 0x1f600, end: 0x1f64f }] },
-  { name: "Miscellaneous Symbols and Pictographs", ranges: [{ start: 0x1f300, end: 0x1f5ff }] },
-  { name: "Transport and Map Symbols", ranges: [{ start: 0x1f680, end: 0x1f6ff }] },
-  { name: "Supplemental Symbols and Pictographs", ranges: [{ start: 0x1f900, end: 0x1f9ff }] },
-  { name: "Symbols and Pictographs Extended-A", ranges: [{ start: 0x1fa70, end: 0x1faff }] },
-]
+  {
+    name: "Miscellaneous Symbols and Pictographs",
+    ranges: [{ start: 0x1f300, end: 0x1f5ff }],
+  },
+  {
+    name: "Transport and Map Symbols",
+    ranges: [{ start: 0x1f680, end: 0x1f6ff }],
+  },
+  {
+    name: "Supplemental Symbols and Pictographs",
+    ranges: [{ start: 0x1f900, end: 0x1f9ff }],
+  },
+  {
+    name: "Symbols and Pictographs Extended-A",
+    ranges: [{ start: 0x1fa70, end: 0x1faff }],
+  },
+];
 
 /** Browsing category used for generated regional-indicator flag sequences. */
-export const FLAGS_BLOCK = "Flags"
+export const FLAGS_BLOCK = "Flags";
 
 /**
  * Collect every candidate code point of a curated block, sorted ascending.
  * Unassigned ones are filtered later against the UCD data.
  */
 export function collectBlockCodepoints(block: CuratedBlock): number[] {
-  const out: number[] = []
+  const out: number[] = [];
   for (const range of block.ranges) {
-    for (let cp = range.start; cp <= range.end; cp++) out.push(cp)
+    for (let cp = range.start; cp <= range.end; cp++) out.push(cp);
   }
-  out.push(...(block.codepoints ?? []))
-  out.sort((a, b) => a - b)
-  return out
+  out.push(...(block.codepoints ?? []));
+  out.sort((a, b) => a - b);
+  return out;
 }

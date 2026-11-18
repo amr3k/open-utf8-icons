@@ -4,7 +4,7 @@
  * developer-copyable representation and search keywords.
  */
 
-import type { Glyph } from "../../src/lib/data/types.js"
+import type { Glyph } from "../../src/lib/data/types.js";
 import {
   charFromCodepoints,
   formatCodepoints,
@@ -14,27 +14,29 @@ import {
   formatHtmlHex,
   formatJsEscape,
   toHex,
-} from "./formats.js"
-import { ALL_CURATED_KEYWORDS, buildKeywords } from "./keywords.js"
+} from "./formats.js";
+import { ALL_CURATED_KEYWORDS, buildKeywords } from "./keywords.js";
 
 export interface GlyphSource {
   /** One code point for regular glyphs, two for flag sequences */
-  codepoints: number[]
+  codepoints: number[];
   /** Official Unicode name (or `FLAG OF <REGION>` for flags) */
-  name: string
+  name: string;
   /** Unicode general category short code, e.g. "So" */
-  category: string
+  category: string;
   /** Curated browsing category / Unicode block name */
-  block: string
+  block: string;
   /** Extra curated keywords (e.g. flag region aliases) */
-  extraKeywords?: string[]
+  extraKeywords?: string[];
 }
 
 /** Build a complete dataset glyph from a UCD entry or flag sequence. */
 export function buildGlyph(source: GlyphSource): Glyph {
-  const { codepoints } = source
+  const { codepoints } = source;
   const curated =
-    codepoints.length === 1 ? ALL_CURATED_KEYWORDS[formatCodepoints(codepoints)] : undefined
+    codepoints.length === 1
+      ? ALL_CURATED_KEYWORDS[formatCodepoints(codepoints)]
+      : undefined;
   return {
     char: charFromCodepoints(codepoints),
     name: source.name,
@@ -47,6 +49,9 @@ export function buildGlyph(source: GlyphSource): Glyph {
     jsEscape: formatJsEscape(codepoints),
     category: source.category,
     block: source.block,
-    keywords: buildKeywords(source.name, [...(curated ?? []), ...(source.extraKeywords ?? [])]),
-  }
+    keywords: buildKeywords(source.name, [
+      ...(curated ?? []),
+      ...(source.extraKeywords ?? []),
+    ]),
+  };
 }

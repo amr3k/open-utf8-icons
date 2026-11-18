@@ -144,7 +144,9 @@
       >
         <li class="flex items-center gap-2">
           <span class="text-emerald-500 font-bold" aria-hidden="true">✓</span>
-          <span>Bun extraction pipeline with cached UCD downloads (Unicode 16.0.0)</span>
+          <span
+            >Bun extraction pipeline with cached UCD downloads (Unicode 16.0.0)</span
+          >
         </li>
         <li class="flex items-center gap-2">
           <span class="text-emerald-500 font-bold" aria-hidden="true">✓</span>
@@ -152,7 +154,9 @@
         </li>
         <li class="flex items-center gap-2">
           <span class="text-emerald-500 font-bold" aria-hidden="true">✓</span>
-          <span>Full metadata: codepoint, decimal, HTML/CSS/JS escapes, keywords</span>
+          <span
+            >Full metadata: codepoint, decimal, HTML/CSS/JS escapes, keywords</span
+          >
         </li>
         <li class="flex items-center gap-2">
           <span class="text-emerald-500 font-bold" aria-hidden="true">✓</span>

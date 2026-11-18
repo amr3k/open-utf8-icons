@@ -17,35 +17,48 @@
  * app and CI never need network access).
  */
 
-import { mkdirSync } from "node:fs"
-import path from "node:path"
-import type { Glyph, IconsDataset } from "../src/lib/data/types.js"
-import { collectBlockCodepoints, CURATED_BLOCKS, FLAGS_BLOCK } from "./lib/blocks.js"
-import { flagCodepoints, flagEntryName, flagKeywords, FLAG_REGIONS } from "./lib/flags.js"
-import { formatCodepoints } from "./lib/formats.js"
-import { buildGlyph } from "./lib/glyph.js"
-import { ALL_CURATED_KEYWORDS } from "./lib/keywords.js"
-import { loadUnicodeData, parseUnicodeData, type UcdOrigin } from "./lib/ucd.js"
+import { mkdirSync } from "node:fs";
+import path from "node:path";
+import type { Glyph, IconsDataset } from "../src/lib/data/types.js";
+import {
+  collectBlockCodepoints,
+  CURATED_BLOCKS,
+  FLAGS_BLOCK,
+} from "./lib/blocks.js";
+import {
+  flagCodepoints,
+  flagEntryName,
+  flagKeywords,
+  FLAG_REGIONS,
+} from "./lib/flags.js";
+import { formatCodepoints } from "./lib/formats.js";
+import { buildGlyph } from "./lib/glyph.js";
+import { ALL_CURATED_KEYWORDS } from "./lib/keywords.js";
+import {
+  loadUnicodeData,
+  parseUnicodeData,
+  type UcdOrigin,
+} from "./lib/ucd.js";
 
 /** Dataset schema version — bump when the output shape changes incompatibly. */
-const SCHEMA_VERSION = 1
+const SCHEMA_VERSION = 1;
 
 /** Default Unicode version to extract from. Bump to refresh the dataset. */
-const DEFAULT_UNICODE_VERSION = "16.0.0"
+const DEFAULT_UNICODE_VERSION = "16.0.0";
 
 /** Roadmap target for the curated glyph count (issue #1, Phase 2). */
-const TARGET_RANGE: [number, number] = [3000, 5000]
+const TARGET_RANGE: [number, number] = [3000, 5000];
 
 /** Local cache directory for downloaded UCD files (git-ignored). */
-const CACHE_DIR = ".cache"
+const CACHE_DIR = ".cache";
 
-const DEFAULT_OUT_PATH = "src/lib/data/icons.json"
+const DEFAULT_OUT_PATH = "src/lib/data/icons.json";
 
 interface CliOptions {
-  unicodeVersion: string
-  outPath: string
-  localUcdPath?: string
-  force: boolean
+  unicodeVersion: string;
+  outPath: string;
+  localUcdPath?: string;
+  force: boolean;
 }
 
 function printUsage(): void {
@@ -56,7 +69,7 @@ Options:
   --out <path>         Output JSON path (default: ${DEFAULT_OUT_PATH})
   --ucd <path>         Use a local UnicodeData.txt instead of downloading
   --force              Re-download the UCD file even if cached
-  -h, --help           Show this help`)
+  -h, --help           Show this help`);
 }
 
 function parseArgs(argv: string[]): CliOptions | null {
@@ -64,80 +77,80 @@ function parseArgs(argv: string[]): CliOptions | null {
     unicodeVersion: DEFAULT_UNICODE_VERSION,
     outPath: DEFAULT_OUT_PATH,
     force: false,
-  }
+  };
   for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i]
+    const arg = argv[i];
     const value = (): string => {
-      const next = argv[i + 1]
+      const next = argv[i + 1];
       if (next === undefined) {
-        console.error(`Missing value for ${arg}`)
-        return ""
+        console.error(`Missing value for ${arg}`);
+        return "";
       }
-      i++
-      return next
-    }
+      i++;
+      return next;
+    };
     switch (arg) {
       case "--force":
-        opts.force = true
-        break
+        opts.force = true;
+        break;
       case "--ucd":
-        opts.localUcdPath = value()
-        break
+        opts.localUcdPath = value();
+        break;
       case "--out":
-        opts.outPath = value()
-        break
+        opts.outPath = value();
+        break;
       case "--unicode":
-        opts.unicodeVersion = value()
-        break
+        opts.unicodeVersion = value();
+        break;
       case "-h":
       case "--help":
-        printUsage()
-        return null
+        printUsage();
+        return null;
       default:
-        console.error(`Unknown option: ${arg}`)
-        printUsage()
-        return null
+        console.error(`Unknown option: ${arg}`);
+        printUsage();
+        return null;
     }
   }
-  return opts
+  return opts;
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} kB`
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} kB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
 /** Plain lexicographic sort — deterministic across machines and locales. */
 function compareByName(a: { name: string }, b: { name: string }): number {
-  if (a.name < b.name) return -1
-  if (a.name > b.name) return 1
-  return 0
+  if (a.name < b.name) return -1;
+  if (a.name > b.name) return 1;
+  return 0;
 }
 
 interface ExtractionResult {
-  glyphs: Glyph[]
-  blockCounts: Map<string, number>
-  unusedCuratedKeys: string[]
+  glyphs: Glyph[];
+  blockCounts: Map<string, number>;
+  unusedCuratedKeys: string[];
 }
 
 function extractGlyphs(
   entries: Map<number, { name: string; category: string }>,
 ): ExtractionResult {
-  const glyphs: Glyph[] = []
-  const blockCounts = new Map<string, number>()
-  const usedKeys = new Set<string>()
-  const unusedCuratedKeys = new Set(Object.keys(ALL_CURATED_KEYWORDS))
+  const glyphs: Glyph[] = [];
+  const blockCounts = new Map<string, number>();
+  const usedKeys = new Set<string>();
+  const unusedCuratedKeys = new Set(Object.keys(ALL_CURATED_KEYWORDS));
 
   for (const block of CURATED_BLOCKS) {
-    let included = 0
+    let included = 0;
     for (const cp of collectBlockCodepoints(block)) {
-      const entry = entries.get(cp)
-      if (!entry) continue // unassigned in this Unicode version — skip
-      const key = formatCodepoints([cp])
-      if (usedKeys.has(key)) continue // safety: never emit a code point twice
-      usedKeys.add(key)
-      unusedCuratedKeys.delete(key)
+      const entry = entries.get(cp);
+      if (!entry) continue; // unassigned in this Unicode version — skip
+      const key = formatCodepoints([cp]);
+      if (usedKeys.has(key)) continue; // safety: never emit a code point twice
+      usedKeys.add(key);
+      unusedCuratedKeys.delete(key);
       glyphs.push(
         buildGlyph({
           codepoints: [cp],
@@ -145,13 +158,13 @@ function extractGlyphs(
           category: entry.category,
           block: block.name,
         }),
-      )
-      included++
+      );
+      included++;
     }
-    blockCounts.set(block.name, included)
+    blockCounts.set(block.name, included);
   }
 
-  const sortedRegions = [...FLAG_REGIONS].sort(compareByName)
+  const sortedRegions = [...FLAG_REGIONS].sort(compareByName);
   for (const region of sortedRegions) {
     glyphs.push(
       buildGlyph({
@@ -161,11 +174,11 @@ function extractGlyphs(
         block: FLAGS_BLOCK,
         extraKeywords: flagKeywords(region),
       }),
-    )
+    );
   }
-  blockCounts.set(FLAGS_BLOCK, sortedRegions.length)
+  blockCounts.set(FLAGS_BLOCK, sortedRegions.length);
 
-  return { glyphs, blockCounts, unusedCuratedKeys: [...unusedCuratedKeys] }
+  return { glyphs, blockCounts, unusedCuratedKeys: [...unusedCuratedKeys] };
 }
 
 function printReport(
@@ -175,67 +188,72 @@ function printReport(
   json: string,
   outPath: string,
 ): void {
-  const rawBytes = Buffer.byteLength(json, "utf8")
-  const gzipBytes = Bun.gzipSync(json).length
-  console.log(`✓ Wrote ${result.glyphs.length} glyphs → ${outPath}`)
-  console.log(`  Source: Unicode ${unicodeVersion} UCD (${origin})`)
-  console.log(`  Payload: ${formatBytes(rawBytes)} raw / ${formatBytes(gzipBytes)} gzip (minified)`)
+  const rawBytes = Buffer.byteLength(json, "utf8");
+  const gzipBytes = Bun.gzipSync(json).length;
+  console.log(`✓ Wrote ${result.glyphs.length} glyphs → ${outPath}`);
+  console.log(`  Source: Unicode ${unicodeVersion} UCD (${origin})`);
+  console.log(
+    `  Payload: ${formatBytes(rawBytes)} raw / ${formatBytes(gzipBytes)} gzip (minified)`,
+  );
   for (const [block, count] of result.blockCounts) {
-    console.log(`    ${block.padEnd(42)} ${String(count).padStart(4)}`)
+    console.log(`    ${block.padEnd(42)} ${String(count).padStart(4)}`);
   }
-  const [min, max] = TARGET_RANGE
+  const [min, max] = TARGET_RANGE;
   if (result.glyphs.length < min || result.glyphs.length > max) {
     console.warn(
       `⚠ Glyph count ${result.glyphs.length} is outside the roadmap target of ~${min}–${max}. ` +
         `Adjust the curated blocks in scripts/lib/blocks.ts.`,
-    )
+    );
   }
   if (result.unusedCuratedKeys.length > 0) {
     console.warn(
       `⚠ Curated keywords matched no glyph (${result.unusedCuratedKeys.join(", ")}) — ` +
         `check the code points in scripts/lib/keywords.ts.`,
-    )
+    );
   }
 }
 
 async function main(): Promise<void> {
-  const opts = parseArgs(Bun.argv.slice(2))
+  const opts = parseArgs(Bun.argv.slice(2));
   if (!opts) {
-    process.exitCode = 1
-    return
+    process.exitCode = 1;
+    return;
   }
 
-  const ucdUrl = `https://www.unicode.org/Public/${opts.unicodeVersion}/ucd/UnicodeData.txt`
-  const cachePath = path.join(CACHE_DIR, `UnicodeData-${opts.unicodeVersion}.txt`)
+  const ucdUrl = `https://www.unicode.org/Public/${opts.unicodeVersion}/ucd/UnicodeData.txt`;
+  const cachePath = path.join(
+    CACHE_DIR,
+    `UnicodeData-${opts.unicodeVersion}.txt`,
+  );
 
-  console.log("ツ open-utf8-icons — dataset extraction")
-  console.log(`  Unicode version: ${opts.unicodeVersion}`)
+  console.log("ツ open-utf8-icons — dataset extraction");
+  console.log(`  Unicode version: ${opts.unicodeVersion}`);
   const source = await loadUnicodeData({
     url: ucdUrl,
     cachePath,
     localPath: opts.localUcdPath,
     force: opts.force,
-  })
-  console.log(`  UCD source: ${source.origin}`)
+  });
+  console.log(`  UCD source: ${source.origin}`);
 
-  const entries = parseUnicodeData(source.text)
-  console.log(`  Parsed ${entries.size} assigned code points`)
+  const entries = parseUnicodeData(source.text);
+  console.log(`  Parsed ${entries.size} assigned code points`);
 
-  const result = extractGlyphs(entries)
+  const result = extractGlyphs(entries);
   const dataset: IconsDataset = {
     version: SCHEMA_VERSION,
     unicode: opts.unicodeVersion,
     generated: new Date().toISOString().slice(0, 10),
     count: result.glyphs.length,
     glyphs: result.glyphs,
-  }
-  const json = JSON.stringify(dataset)
+  };
+  const json = JSON.stringify(dataset);
 
-  mkdirSync(path.dirname(opts.outPath), { recursive: true })
-  await Bun.write(opts.outPath, json)
-  printReport(result, opts.unicodeVersion, source.origin, json, opts.outPath)
+  mkdirSync(path.dirname(opts.outPath), { recursive: true });
+  await Bun.write(opts.outPath, json);
+  printReport(result, opts.unicodeVersion, source.origin, json, opts.outPath);
 }
 
 if (import.meta.main) {
-  await main()
+  await main();
 }

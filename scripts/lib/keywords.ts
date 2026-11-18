@@ -7,10 +7,10 @@
  * "fire" or "coffee" actually finds ★, ✓, ↻, 🔥 and ☕.
  */
 
-import { formatCodepoints } from "./formats.js"
+import { formatCodepoints } from "./formats.js";
 
 /** Maximum number of keywords stored per glyph (bounds payload size). */
-export const MAX_KEYWORDS = 8
+export const MAX_KEYWORDS = 8;
 
 /** Words dropped from official names — they add search noise, not signal. */
 const STOPWORDS = new Set([
@@ -28,11 +28,11 @@ const STOPWORDS = new Set([
   "from",
   "sign",
   "symbol",
-])
+]);
 
 /** Curation key for a single code point: `0x2605` → `"U+2605"`. */
 function curationKey(codepoint: number): string {
-  return formatCodepoints([codepoint])
+  return formatCodepoints([codepoint]);
 }
 
 /**
@@ -278,10 +278,28 @@ const CURATED_KEYWORDS: Record<string, string[]> = {
 
   // Status marks
   "U+2610": ["checkbox", "unchecked", "empty", "vote", "todo"],
-  "U+2611": ["checkbox", "checked", "done", "complete", "vote", "select", "yes", "todo"],
+  "U+2611": [
+    "checkbox",
+    "checked",
+    "done",
+    "complete",
+    "vote",
+    "select",
+    "yes",
+    "todo",
+  ],
   "U+2612": ["checkbox", "crossed", "cancel", "no", "wrong", "todo"],
   "U+2705": ["check", "done", "complete", "yes", "green", "success", "todo"],
-  "U+2713": ["check", "tick", "done", "complete", "yes", "select", "confirm", "todo"],
+  "U+2713": [
+    "check",
+    "tick",
+    "done",
+    "complete",
+    "yes",
+    "select",
+    "confirm",
+    "todo",
+  ],
   "U+2714": ["check", "tick", "bold", "heavy", "done", "yes", "todo"],
   "U+2715": ["x", "cross", "close", "cancel", "multiply", "delete"],
   "U+2716": ["x", "cross", "close", "cancel", "multiply", "heavy"],
@@ -426,7 +444,7 @@ const CURATED_KEYWORDS: Record<string, string[]> = {
   "U+270A": ["fist", "punch", "power", "hand", "bump"],
   "U+270C": ["victory", "peace", "hand", "two", "v"],
   "U+270D": ["hand", "writing", "pencil"],
-}
+};
 
 /**
  * Adds Enclosed Alphanumeric keywords programmatically:
@@ -434,42 +452,42 @@ const CURATED_KEYWORDS: Record<string, string[]> = {
  * circled/parenthesized letters, so that searching "3" or "a" finds ③ / ⓐ.
  */
 function enclosedAlphanumericKeywords(): Record<string, string[]> {
-  const map: Record<string, string[]> = {}
-  const letters = "abcdefghijklmnopqrstuvwxyz".split("")
-  for (let n = 1; n <= 20; n++) map[curationKey(0x2460 + n - 1)] = [String(n)] // CIRCLED ONE..TWENTY
-  for (let n = 1; n <= 20; n++) map[curationKey(0x2474 + n - 1)] = [String(n)] // PARENTHESIZED ONE..TWENTY
-  for (let n = 1; n <= 9; n++) map[curationKey(0x2488 + n - 1)] = [String(n)] // DIGIT ONE..NINE FULL STOP
+  const map: Record<string, string[]> = {};
+  const letters = "abcdefghijklmnopqrstuvwxyz".split("");
+  for (let n = 1; n <= 20; n++) map[curationKey(0x2460 + n - 1)] = [String(n)]; // CIRCLED ONE..TWENTY
+  for (let n = 1; n <= 20; n++) map[curationKey(0x2474 + n - 1)] = [String(n)]; // PARENTHESIZED ONE..TWENTY
+  for (let n = 1; n <= 9; n++) map[curationKey(0x2488 + n - 1)] = [String(n)]; // DIGIT ONE..NINE FULL STOP
   letters.forEach((letter, i) => {
-    map[curationKey(0x249c + i)] = [letter] // PARENTHESIZED LATIN SMALL A..Z
-    map[curationKey(0x24b6 + i)] = [letter] // CIRCLED LATIN CAPITAL A..Z
-    map[curationKey(0x24d0 + i)] = [letter] // CIRCLED LATIN SMALL A..Z
-  })
-  map[curationKey(0x24ea)] = ["0"] // CIRCLED DIGIT ZERO
-  return map
+    map[curationKey(0x249c + i)] = [letter]; // PARENTHESIZED LATIN SMALL A..Z
+    map[curationKey(0x24b6 + i)] = [letter]; // CIRCLED LATIN CAPITAL A..Z
+    map[curationKey(0x24d0 + i)] = [letter]; // CIRCLED LATIN SMALL A..Z
+  });
+  map[curationKey(0x24ea)] = ["0"]; // CIRCLED DIGIT ZERO
+  return map;
 }
 
 /** Complete curated map: hand-picked synonyms + programmatic enclosed alphanumerics. */
 export const ALL_CURATED_KEYWORDS: Record<string, string[]> = {
   ...CURATED_KEYWORDS,
   ...enclosedAlphanumericKeywords(),
-}
+};
 
 /** Words extracted from an official Unicode name, lowercased. */
 export function keywordsFromName(name: string): string[] {
-  const keywords: string[] = []
-  const seen = new Set<string>()
+  const keywords: string[] = [];
+  const seen = new Set<string>();
   const push = (word: string) => {
-    if (word.length < 2 || STOPWORDS.has(word) || seen.has(word)) return
-    seen.add(word)
-    keywords.push(word)
-  }
+    if (word.length < 2 || STOPWORDS.has(word) || seen.has(word)) return;
+    seen.add(word);
+    keywords.push(word);
+  };
   for (const word of name.toLowerCase().split(/[^\p{L}\p{N}]+/u)) {
-    if (word.length === 0) continue
-    push(word)
+    if (word.length === 0) continue;
+    push(word);
     // Directional stem: "leftwards" also matches searches for "left".
-    if (word.endsWith("wards")) push(word.slice(0, -5))
+    if (word.endsWith("wards")) push(word.slice(0, -5));
   }
-  return keywords
+  return keywords;
 }
 
 /**
@@ -477,17 +495,17 @@ export function keywordsFromName(name: string): string[] {
  * deduplicate case-insensitively and cap at {@link MAX_KEYWORDS}.
  */
 export function buildKeywords(name: string, extra?: string[]): string[] {
-  const keywords: string[] = []
-  const seen = new Set<string>()
+  const keywords: string[] = [];
+  const seen = new Set<string>();
   for (const word of keywordsFromName(name)) {
-    seen.add(word)
-    keywords.push(word)
+    seen.add(word);
+    keywords.push(word);
   }
   for (const word of extra ?? []) {
-    const lower = word.toLowerCase()
-    if (seen.has(lower)) continue
-    seen.add(lower)
-    keywords.push(lower)
+    const lower = word.toLowerCase();
+    if (seen.has(lower)) continue;
+    seen.add(lower);
+    keywords.push(lower);
   }
-  return keywords.slice(0, MAX_KEYWORDS)
+  return keywords.slice(0, MAX_KEYWORDS);
 }

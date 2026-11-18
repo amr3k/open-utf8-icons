@@ -8,45 +8,45 @@
 /** A single Unicode glyph or a multi-codepoint emoji sequence (country flags). */
 export interface Glyph {
   /** The character itself, e.g. `★` (or a sequence like `🇺🇸`) */
-  char: string
+  char: string;
   /**
    * Official Unicode name in uppercase, e.g. `BLACK STAR`.
    * Flag sequences have no official single name and use `FLAG OF <REGION>`.
    */
-  name: string
+  name: string;
   /** Code point display label, e.g. `U+2605` (sequences are space-joined) */
-  codepoint: string
+  codepoint: string;
   /** Decimal code point, e.g. `9733`. Sequences use a space-joined string. */
-  dec: number | string
+  dec: number | string;
   /** Lowercase hex without padding, e.g. `2605` (sequences are space-joined) */
-  hex: string
+  hex: string;
   /** Decimal HTML entity, e.g. `&#9733;` */
-  htmlEntity: string
+  htmlEntity: string;
   /** Hexadecimal HTML entity, e.g. `&#x2605;` */
-  htmlHex: string
+  htmlHex: string;
   /** CSS escape sequence, e.g. `\2605` (sequences are space-joined) */
-  cssEscape: string
+  cssEscape: string;
   /** JavaScript escape, e.g. `\u2605` (astral code points use `\u{...}`) */
-  jsEscape: string
+  jsEscape: string;
   /** Unicode general category (short code), e.g. `So` — see {@link CATEGORY_LABELS} */
-  category: string
+  category: string;
   /** Curated browsing category / Unicode block name, e.g. `Miscellaneous Symbols` */
-  block: string
+  block: string;
   /** Lowercase search terms: name-derived words plus curated synonyms */
-  keywords: string[]
+  keywords: string[];
 }
 
 /** Root shape of `icons.json`. */
 export interface IconsDataset {
   /** Dataset schema version — bump when the shape changes incompatibly */
-  version: number
+  version: number;
   /** Unicode version of the source UCD data, e.g. `16.0.0` */
-  unicode: string
+  unicode: string;
   /** Generation date as `YYYY-MM-DD` */
-  generated: string
+  generated: string;
   /** Number of glyphs — always equals `glyphs.length` */
-  count: number
-  glyphs: Glyph[]
+  count: number;
+  glyphs: Glyph[];
 }
 
 /** Friendly labels for Unicode general category short codes. */
@@ -81,4 +81,4 @@ export const CATEGORY_LABELS: Record<string, string> = {
   Cs: "Surrogate",
   Co: "Private Use",
   Cn: "Unassigned",
-}
+};

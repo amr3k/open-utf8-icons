@@ -11,30 +11,30 @@
 
 export interface FlagRegion {
   /** ISO 3166-1 alpha-2 code (or exceptionally-reserved / user-assigned code) */
-  code: string
+  code: string;
   /** Region display name (uppercase in generated glyph names) */
-  name: string
+  name: string;
   /** Extra lowercase search synonyms */
-  aliases?: string[]
+  aliases?: string[];
 }
 
 /** First regional indicator symbol: `A` → U+1F1E6. */
-const REGIONAL_INDICATOR_BASE = 0x1f1e6
+const REGIONAL_INDICATOR_BASE = 0x1f1e6;
 
 /** Two regional indicator code points for a two-letter region code. */
 export function flagCodepoints(code: string): [number, number] {
   if (!/^[A-Z]{2}$/.test(code)) {
-    throw new Error(`Invalid flag region code: "${code}"`)
+    throw new Error(`Invalid flag region code: "${code}"`);
   }
   return [
     REGIONAL_INDICATOR_BASE + (code.charCodeAt(0) - 65),
     REGIONAL_INDICATOR_BASE + (code.charCodeAt(1) - 65),
-  ]
+  ];
 }
 
 /** Generated glyph name for a region: `"UNITED STATES"` → `"FLAG OF UNITED STATES"`. */
 export function flagEntryName(region: FlagRegion): string {
-  return `FLAG OF ${region.name.toUpperCase()}`
+  return `FLAG OF ${region.name.toUpperCase()}`;
 }
 
 /** Search keywords for a region: `flag`, region name words, lowercased code and aliases. */
@@ -42,8 +42,13 @@ export function flagKeywords(region: FlagRegion): string[] {
   const nameWords = region.name
     .toLowerCase()
     .split(/[^\p{L}\p{N}]+/u)
-    .filter((word) => word.length >= 2)
-  return ["flag", ...nameWords, region.code.toLowerCase(), ...(region.aliases ?? [])]
+    .filter((word) => word.length >= 2);
+  return [
+    "flag",
+    ...nameWords,
+    region.code.toLowerCase(),
+    ...(region.aliases ?? []),
+  ];
 }
 
 /** Curated flag regions, ordered alphabetically by code. */
@@ -131,7 +136,11 @@ export const FLAG_REGIONS: FlagRegion[] = [
   { code: "FO", name: "Faroe Islands" },
   { code: "FR", name: "France", aliases: ["french"] },
   { code: "GA", name: "Gabon" },
-  { code: "GB", name: "United Kingdom", aliases: ["uk", "britain", "great britain", "british"] },
+  {
+    code: "GB",
+    name: "United Kingdom",
+    aliases: ["uk", "britain", "great britain", "british"],
+  },
   { code: "GD", name: "Grenada" },
   { code: "GE", name: "Georgia", aliases: ["georgian"] },
   { code: "GF", name: "French Guiana" },
@@ -300,7 +309,11 @@ export const FLAG_REGIONS: FlagRegion[] = [
   { code: "VC", name: "Saint Vincent and the Grenadines" },
   { code: "VE", name: "Venezuela" },
   { code: "VG", name: "British Virgin Islands" },
-  { code: "VI", name: "United States Virgin Islands", aliases: ["us virgin islands"] },
+  {
+    code: "VI",
+    name: "United States Virgin Islands",
+    aliases: ["us virgin islands"],
+  },
   { code: "VN", name: "Vietnam", aliases: ["viet nam"] },
   { code: "VU", name: "Vanuatu" },
   { code: "WF", name: "Wallis and Futuna" },
@@ -311,4 +324,4 @@ export const FLAG_REGIONS: FlagRegion[] = [
   { code: "ZA", name: "South Africa", aliases: ["rsa"] },
   { code: "ZM", name: "Zambia" },
   { code: "ZW", name: "Zimbabwe" },
-]
+];
