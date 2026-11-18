@@ -23,8 +23,8 @@ export type FetchStrategy =
 
 /** Request facts needed to pick a caching strategy. */
 export interface RequestPolicy {
-  method: string;
-  mode: string;
+  method: Request["method"];
+  mode: RequestMode;
   sameOrigin: boolean;
   pathname: string;
   /** Whether the pathname was precached during install. */
@@ -36,9 +36,10 @@ export interface RequestPolicy {
  * - anything that isn't a same-origin GET bypasses the cache;
  * - the worker script and SvelteKit's version check are always fetched from
  *   the network so deployments are picked up;
+ * - navigations are network-first, even for the precached root, so a fresh
+ *   deployment is seen immediately; the cached shell and `/offline` are the
+ *   offline fallbacks;
  * - precached build output and static assets are immutable, so cache-first;
- * - navigations are network-first so a fresh deployment is seen immediately,
- *   with the cached app shell / offline page as the fallback;
  * - remaining same-origin assets revalidate in the background.
  */
 export function requestStrategy(request: RequestPolicy): FetchStrategy {
@@ -49,21 +50,14 @@ export function requestStrategy(request: RequestPolicy): FetchStrategy {
   ) {
     return "network-only";
   }
-  if (request.precached) return "cache-first";
   if (request.mode === "navigate") return "network-first";
+  if (request.precached) return "cache-first";
   return "stale-while-revalidate";
 }
 
-/**
- * Build a deployment-scoped cache name. The build version is usually a
- * timestamp, but sanitizing keeps arbitrary `version.name` values safe.
- */
+/** Build the deployment-scoped cache name. */
 export function createCacheName(version: string): string {
-  const safe = version
-    .trim()
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    .slice(0, 64);
-  return `${CACHE_PREFIX}-${safe === "" ? "dev" : safe}`;
+  return `${CACHE_PREFIX}-${version}`;
 }
 
 /** Whether a response is safe to store for offline use. */

@@ -5,12 +5,12 @@
   "description": "Discover, preview and copy native UTF-8 and Unicode glyphs — an offline-first, ad-free directory with instant local search.",
   "lang": "en",
   "dir": "ltr",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#ffffff",
-  "theme_color": "#09090b",
+  "theme_color": "#ffffff",
   "categories": ["developer", "utilities", "productivity"],
   "icons": [
     {
