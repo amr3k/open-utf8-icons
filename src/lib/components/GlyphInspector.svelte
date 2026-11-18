@@ -236,7 +236,7 @@
           <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {#each FONT_STACKS as font (font.id)}
               <figure
-                class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-3 dark:border-zinc-800 dark:bg-zinc-900"
+                class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 py-3 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
               >
                 <span
                   class="text-3xl leading-none"
