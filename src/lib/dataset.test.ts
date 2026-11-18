@@ -7,7 +7,6 @@
 
 import { describe, expect, test } from "bun:test";
 import {
-  blockStats,
   countBlocks,
   dataset,
   glyphByCodepoint,
@@ -53,13 +52,9 @@ describe("glyphFromHash", () => {
   });
 });
 
-describe("blockStats", () => {
-  test("matches countBlocks over the full dataset", () => {
-    expect(blockStats).toEqual(countBlocks(glyphs));
-  });
-
-  test("contains every distinct block exactly once", () => {
-    const blocks = blockStats.map((stat) => stat.block);
+describe("countBlocks", () => {
+  test("counts every distinct block exactly once", () => {
+    const blocks = countBlocks(glyphs).map((stat) => stat.block);
     expect(new Set(blocks).size).toBe(blocks.length);
 
     const distinct = new Set(glyphs.map((glyph) => glyph.block));
@@ -74,10 +69,10 @@ describe("blockStats", () => {
     for (const glyph of glyphs) {
       if (!firstSeen.includes(glyph.block)) firstSeen.push(glyph.block);
     }
-    expect(blockStats.map((stat) => stat.block)).toEqual(firstSeen);
+    expect(countBlocks(glyphs).map((stat) => stat.block)).toEqual(firstSeen);
   });
 
-  test("countBlocks scopes counts to an arbitrary subset", () => {
+  test("scopes counts to an arbitrary subset", () => {
     const star = glyphByCodepoint.get("U+2605");
     const arrow = glyphByCodepoint.get("U+2190");
     expect(star).toBeDefined();
