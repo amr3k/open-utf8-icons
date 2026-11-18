@@ -13,8 +13,9 @@
     "build": "wrangler types --check && vite build",
     "preview": "wrangler pages dev .svelte-kit/cloudflare --port 4173",
     "prepare": "svelte-kit sync || echo ''",
-    "check": "wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check": "wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && bun run check:sw",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "check:sw": "tsc -p src/service-worker/tsconfig.json --noEmit",
     "gen": "wrangler types",
     "generate:icons": "bun run scripts/generate-icons.ts",
     "test": "bun test"

@@ -8,6 +8,26 @@
       content="open-utf8-icons — High-performance, ad-free web directory for discovering, previewing, and copying native UTF-8 and Unicode glyphs."
     />
     <title>open-utf8-icons — Discover & Copy UTF-8 Unicode Glyphs</title>
+    <link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="%sveltekit.assets%/icons/apple-touch-icon.png"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="utf8 icons" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <script>
+      // Capture the one-shot install event before hydration so the mobile
+      // banner can still be offered when it fires while modules are loading.
+      // Leave desktop Chromium's own install UI alone.
+      window.addEventListener("beforeinstallprompt", function (event) {
+        if (!window.matchMedia("(pointer: coarse)").matches) return;
+        event.preventDefault();
+        window.__utf8IconsInstallPrompt = event;
+      });
+    </script>
     <script>
       (function () {
         try {

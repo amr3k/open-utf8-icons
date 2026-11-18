@@ -3,7 +3,10 @@
   import favicon from "#lib/assets/favicon.svg";
   import { theme } from "#lib/theme.svelte.js";
   import { library } from "#lib/library.svelte.js";
+  import { pwa } from "#lib/pwa.svelte.js";
   import Header from "#lib/components/Header.svelte";
+  import InstallBanner from "#lib/components/InstallBanner.svelte";
+  import OfflineIndicator from "#lib/components/OfflineIndicator.svelte";
   import Footer from "#lib/components/Footer.svelte";
   import Toaster from "#lib/components/Toaster.svelte";
   import { onMount } from "svelte";
@@ -14,8 +17,10 @@
   onMount(() => {
     theme.init();
     library.init();
+    pwa.init();
     return () => {
       theme.destroy();
+      pwa.destroy();
     };
   });
 </script>
@@ -26,8 +31,10 @@
 
 <div class="flex min-h-screen flex-col">
   <Header />
+  <InstallBanner />
   {@render children()}
   <Footer />
 </div>
 
+<OfflineIndicator />
 <Toaster />
