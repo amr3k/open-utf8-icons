@@ -59,13 +59,12 @@
       No glyphs match your search.
     </p>
     <p class="mt-1 max-w-sm text-xs text-zinc-500 dark:text-zinc-400">
-      Try a name like <span
-        class="font-medium text-zinc-700 dark:text-zinc-300">arrow</span
-      >, a keyword like <span
-        class="font-medium text-zinc-700 dark:text-zinc-300">favorite</span
-      >, or a code point like <span
-        class="font-medium text-zinc-700 dark:text-zinc-300">u+2605</span
-      >.
+      Try a name like <span class="font-medium text-zinc-700 dark:text-zinc-300"
+        >arrow</span
+      >, a keyword like
+      <span class="font-medium text-zinc-700 dark:text-zinc-300">favorite</span
+      >, or a code point like
+      <span class="font-medium text-zinc-700 dark:text-zinc-300">u+2605</span>.
     </p>
     {#if onclear}
       <button

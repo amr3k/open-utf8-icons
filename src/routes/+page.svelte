@@ -5,11 +5,7 @@
   import { blockStats, dataset, glyphs, searchEntries } from "#lib/dataset.js";
   import { searchGlyphs, type SearchStatus } from "#lib/search.js";
   import { formatCount } from "#lib/format.js";
-  import {
-    copyToClipboard,
-    getCopyText,
-    type CopyFormat,
-  } from "#lib/copy.js";
+  import { copyToClipboard, getCopyText, type CopyFormat } from "#lib/copy.js";
   import { toasts } from "#lib/toast.svelte.js";
   import type { Glyph } from "#lib/data/types.js";
 
@@ -62,8 +58,10 @@
     </h2>
     <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
       {formatCount(dataset.count)} glyphs from Unicode {dataset.unicode}
-      &middot; instant offline search &middot; press <kbd
-        class="inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-1 text-[10px] font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">/</kbd
+      &middot; instant offline search &middot; press
+      <kbd
+        class="inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-1 text-[10px] font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
+        >/</kbd
       > to search
     </p>
   </div>
@@ -74,6 +72,11 @@
 
   <!-- #key resets the grid's render window whenever the result set changes -->
   {#key results}
-    <GlyphGrid {results} format={copyFormat} oncopy={handleCopy} onclear={clearAll} />
+    <GlyphGrid
+      {results}
+      format={copyFormat}
+      oncopy={handleCopy}
+      onclear={clearAll}
+    />
   {/key}
 </main>

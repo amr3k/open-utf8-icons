@@ -38,7 +38,8 @@
         : `Switch to ${label} mode`}
       class="{PILL_BUTTON} {theme.mode === mode ? PILL_ACTIVE : PILL_INACTIVE}"
     >
-      <span class="text-sm leading-none sm:mr-1" aria-hidden="true">{icon}</span>
+      <span class="text-sm leading-none sm:mr-1" aria-hidden="true">{icon}</span
+      >
       <span class="hidden sm:inline">{label}</span>
     </button>
   {/each}

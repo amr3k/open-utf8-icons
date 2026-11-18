@@ -17,8 +17,9 @@ export const dataset: IconsDataset = iconsJson;
 export const glyphs: readonly Glyph[] = dataset.glyphs;
 
 /** Precomputed search index — build once, share across renders. */
-export const searchEntries: readonly SearchEntry[] =
-  buildSearchEntries(dataset.glyphs);
+export const searchEntries: readonly SearchEntry[] = buildSearchEntries(
+  dataset.glyphs,
+);
 
 /** Name and glyph count of one browsing category (Unicode block). */
 export interface BlockStat {

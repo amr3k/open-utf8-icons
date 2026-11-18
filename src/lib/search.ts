@@ -196,7 +196,10 @@ export function scoreEntry(
     if (hex !== null) {
       if (entry.hexParts.includes(hex)) {
         codepointExact = SCORE_HEX_EXACT;
-      } else if (hex.length >= 2 && entry.hexParts.some((part) => part.startsWith(hex))) {
+      } else if (
+        hex.length >= 2 &&
+        entry.hexParts.some((part) => part.startsWith(hex))
+      ) {
         codepointPrefix = SCORE_HEX_PREFIX;
       }
     }

@@ -28,9 +28,17 @@ export interface CopyFormatOption {
 /** Ordered pill options shown next to the search bar. */
 export const COPY_FORMATS: readonly CopyFormatOption[] = [
   { id: "char", label: "Char", hint: "Copy the character itself, e.g. ★" },
-  { id: "html", label: "HTML", hint: "Copy the decimal HTML entity, e.g. &#9733;" },
+  {
+    id: "html",
+    label: "HTML",
+    hint: "Copy the decimal HTML entity, e.g. &#9733;",
+  },
   { id: "css", label: "CSS", hint: "Copy the CSS escape, e.g. \\2605" },
-  { id: "codepoint", label: "U+", hint: "Copy the Unicode code point, e.g. U+2605" },
+  {
+    id: "codepoint",
+    label: "U+",
+    hint: "Copy the Unicode code point, e.g. U+2605",
+  },
 ];
 
 /** Resolve the clipboard text for a glyph in the given format. */

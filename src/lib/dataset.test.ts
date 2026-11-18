@@ -6,12 +6,7 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import {
-  blockStats,
-  dataset,
-  glyphs,
-  searchEntries,
-} from "./dataset.js";
+import { blockStats, dataset, glyphs, searchEntries } from "./dataset.js";
 
 describe("dataset", () => {
   test("exposes the committed dataset metadata", () => {
