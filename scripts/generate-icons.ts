@@ -39,6 +39,7 @@ import {
 import { formatCodepoints } from "./lib/formats.js";
 import { buildGlyph } from "./lib/glyph.js";
 import { ALL_CURATED_KEYWORDS } from "./lib/keywords.js";
+import { isExcludedReligiousGlyph } from "./lib/religion.js";
 import {
   loadUcdFile,
   loadUnicodeData,
@@ -148,6 +149,7 @@ interface ExtractionResult {
   glyphs: Glyph[];
   blockCounts: Map<string, number>;
   unusedCuratedKeys: string[];
+  excludedReligiousCount: number;
 }
 
 function extractGlyphs(
@@ -158,6 +160,7 @@ function extractGlyphs(
   const blockCounts = new Map<string, number>();
   const usedKeys = new Set<string>();
   const unusedCuratedKeys = new Set(Object.keys(ALL_CURATED_KEYWORDS));
+  let excludedReligiousCount = 0;
 
   for (const block of CURATED_BLOCKS) {
     let included = 0;
@@ -168,6 +171,11 @@ function extractGlyphs(
       if (usedKeys.has(key)) continue; // safety: never emit a code point twice
       usedKeys.add(key);
       unusedCuratedKeys.delete(key);
+      // Curation policy: keep Islamic glyphs, drop other religious signs.
+      if (isExcludedReligiousGlyph([cp])) {
+        excludedReligiousCount++;
+        continue;
+      }
       glyphs.push(
         buildGlyph({
           codepoints: [cp],
@@ -198,7 +206,12 @@ function extractGlyphs(
   }
   blockCounts.set(FLAGS_BLOCK, sortedRegions.length);
 
-  return { glyphs, blockCounts, unusedCuratedKeys: [...unusedCuratedKeys] };
+  return {
+    glyphs,
+    blockCounts,
+    unusedCuratedKeys: [...unusedCuratedKeys],
+    excludedReligiousCount,
+  };
 }
 
 function printReport(
@@ -214,6 +227,11 @@ function printReport(
   const saving = Math.round((1 - rawBytes / expandedBytes) * 100);
   console.log(`✓ Wrote ${result.glyphs.length} glyphs → ${outPath}`);
   console.log(`  Source: Unicode ${unicodeVersion} UCD (${origin})`);
+  if (result.excludedReligiousCount > 0) {
+    console.log(
+      `  Curation: dropped ${result.excludedReligiousCount} non-Islamic religious glyphs`,
+    );
+  }
   console.log(
     `  Payload: ${formatBytes(rawBytes)} raw / ${formatBytes(gzipBytes)} gzip (packed, ` +
       `${saving}% smaller than the ${formatBytes(expandedBytes)} expanded form)`,

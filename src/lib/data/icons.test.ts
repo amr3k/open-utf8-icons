@@ -24,6 +24,10 @@ import packed from "./icons.json";
 import type { Glyph } from "./types.js";
 import { CATEGORY_LABELS, PACKED_VERSION } from "./types.js";
 import { unpackDataset } from "./unpack.js";
+import {
+  EXCLUDED_RELIGIOUS_LOOKUP,
+  ISLAMIC_CODEPOINTS,
+} from "../../../scripts/lib/religion.js";
 
 function parseCodepoints(label: string): number[] {
   return label.split(" ").map((part) => Number.parseInt(part.slice(2), 16));
@@ -165,6 +169,27 @@ describe("committed dataset (src/lib/data/icons.json)", () => {
       );
       expect(values.length, `${label} is empty`).toBeGreaterThan(0);
     }
+  });
+
+  test("keeps Islamic glyphs and drops other religious signs", async () => {
+    const dataset = unpackDataset(packed);
+    const present = new Set(dataset.glyphs.map((glyph) => glyph.codepoint));
+
+    for (const cp of ISLAMIC_CODEPOINTS) {
+      const label = `U+${cp.toString(16).toUpperCase()}`;
+      expect(present.has(label), `missing Islamic glyph ${label}`).toBe(true);
+    }
+
+    const leaked = dataset.glyphs.filter((glyph) =>
+      glyph.codepoint
+        .split(" ")
+        .some((part) =>
+          EXCLUDED_RELIGIOUS_LOOKUP.has(Number.parseInt(part.slice(2), 16)),
+        ),
+    );
+    expect(leaked.map((glyph) => `${glyph.codepoint} ${glyph.name}`)).toEqual(
+      [],
+    );
   });
 
   test("spot checks: iconic glyphs are present with full metadata", async () => {
