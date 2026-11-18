@@ -113,7 +113,7 @@
     aria-live="polite"
   >
     Showing {formatCount(rendered.length)}
-    <span class="text-zinc-400 dark:text-zinc-500">of</span>
+    <span class="text-zinc-500 dark:text-zinc-400">of</span>
     {formatCount(results.length)}
     {#if rendered.length < results.length}
       <span class="ml-1" aria-hidden="true">▾ scroll for more</span>

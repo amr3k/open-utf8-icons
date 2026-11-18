@@ -90,7 +90,7 @@
 <div class="flex flex-col gap-3">
   <div class="relative">
     <span
-      class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base text-zinc-400 dark:text-zinc-500"
+      class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base text-zinc-500 dark:text-zinc-400"
       aria-hidden="true">🔍</span
     >
     <input
@@ -111,14 +111,14 @@
         <button
           type="button"
           onclick={clear}
-          class="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 active:scale-[0.96] dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+          class="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-700 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
           aria-label="Clear search"
         >
           <span class="text-sm leading-none" aria-hidden="true">✕</span>
         </button>
       {:else}
         <kbd
-          class="hidden h-6 min-w-6 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-1.5 text-[10px] font-medium text-zinc-400 sm:inline-flex dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500"
+          class="hidden h-6 min-w-6 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-1.5 text-[10px] font-medium text-zinc-500 sm:inline-flex dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
           aria-hidden="true">/</kbd
         >
       {/if}
@@ -148,7 +148,7 @@
     >
       {#if status.filtersActive}
         {formatCount(status.matchCount)}
-        <span class="text-zinc-400 dark:text-zinc-500">of</span>
+        <span class="text-zinc-500 dark:text-zinc-400">of</span>
         {formatCount(status.totalCount)}
       {:else}
         {formatCount(status.totalCount)} glyphs
