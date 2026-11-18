@@ -16,6 +16,7 @@
     "check": "wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "gen": "wrangler types",
+    "generate:icons": "bun run scripts/generate-icons.ts",
     "test": "bun test"
   },
   "devDependencies": {
