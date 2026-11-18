@@ -165,20 +165,21 @@ export function scoreEntry(
   let codepointExact = 0;
   let codepointPrefix = 0;
   if (codepoint !== null && query.length >= 2) {
-    if (codepoint.hex !== null) {
-      if (entry.hexParts.includes(codepoint.hex)) {
+    // Extract narrowed values before the callbacks below — control flow
+    // analysis cannot reach into closures.
+    const hex = codepoint.hex;
+    if (hex !== null) {
+      if (entry.hexParts.includes(hex)) {
         codepointExact = SCORE_HEX_EXACT;
-      } else if (
-        codepoint.hex.length >= 2 &&
-        entry.hexParts.some((part) => part.startsWith(codepoint.hex))
-      ) {
+      } else if (hex.length >= 2 && entry.hexParts.some((part) => part.startsWith(hex))) {
         codepointPrefix = SCORE_HEX_PREFIX;
       }
     }
-    if (codepoint.dec !== null) {
-      if (entry.decParts.includes(codepoint.dec)) {
+    const dec = codepoint.dec;
+    if (dec !== null) {
+      if (entry.decParts.includes(dec)) {
         codepointExact = Math.max(codepointExact, SCORE_DEC_EXACT);
-      } else if (entry.decParts.some((part) => part.startsWith(codepoint.dec))) {
+      } else if (entry.decParts.some((part) => part.startsWith(dec))) {
         codepointPrefix = Math.max(codepointPrefix, SCORE_DEC_PREFIX);
       }
     }
