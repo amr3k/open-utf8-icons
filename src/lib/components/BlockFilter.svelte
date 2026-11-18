@@ -5,6 +5,8 @@
    * Tapping the active chip (or "All") clears the filter.
    */
   import type { BlockStat } from "#lib/dataset.js";
+  import { formatCount } from "#lib/format.js";
+  import { CHIP_ACTIVE, CHIP_BASE, CHIP_INACTIVE } from "#lib/ui.js";
 
   interface Props {
     blocks: readonly BlockStat[];
@@ -14,8 +16,9 @@
 
   let { blocks, total, block = $bindable(null) }: Props = $props();
 
-  function formatCount(count: number): string {
-    return count.toLocaleString("en-US");
+  /** Select a block; tapping the active block again clears the filter. */
+  function select(name: string) {
+    block = block === name ? null : name;
   }
 </script>
 
@@ -24,30 +27,27 @@
   role="group"
   aria-label="Filter by Unicode block"
 >
-  <button
-    type="button"
-    onclick={() => (block = null)}
-    aria-pressed={block === null}
-    class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 font-medium transition active:scale-[0.96] {block ===
-    null
-      ? 'border-zinc-900 bg-zinc-900 text-zinc-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
-      : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-100'}"
-  >
-    <span>All</span>
-    <span class="tabular-nums opacity-60">{formatCount(total)}</span>
-  </button>
-  {#each blocks as stat (stat.block)}
+  {#snippet chip(
+    label: string,
+    count: number,
+    active: boolean,
+    onclick: () => void,
+  )}
     <button
       type="button"
-      onclick={() => (block = stat.block === block ? null : stat.block)}
-      aria-pressed={block === stat.block}
-      class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 font-medium transition active:scale-[0.96] {block ===
-      stat.block
-        ? 'border-zinc-900 bg-zinc-900 text-zinc-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
-        : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-100'}"
+      {onclick}
+      aria-pressed={active}
+      class="{CHIP_BASE} {active ? CHIP_ACTIVE : CHIP_INACTIVE}"
     >
-      <span>{stat.block}</span>
-      <span class="tabular-nums opacity-60">{formatCount(stat.count)}</span>
+      <span>{label}</span>
+      <span class="tabular-nums opacity-60">{formatCount(count)}</span>
     </button>
+  {/snippet}
+
+  {@render chip("All", total, block === null, () => (block = null))}
+  {#each blocks as stat (stat.block)}
+    {@render chip(stat.block, stat.count, block === stat.block, () =>
+      select(stat.block),
+    )}
   {/each}
 </div>

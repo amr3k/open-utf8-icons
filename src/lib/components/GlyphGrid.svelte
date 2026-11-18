@@ -12,6 +12,7 @@
   import GlyphCard from "#lib/components/GlyphCard.svelte";
   import type { Glyph } from "#lib/data/types.js";
   import type { CopyFormat } from "#lib/copy.js";
+  import { formatCount } from "#lib/format.js";
 
   interface Props {
     results: readonly Glyph[];
@@ -26,7 +27,7 @@
   const PAGE_SIZE = 96;
 
   /** How many cards are currently mounted. */
-  let visible = $state(PAGE_SIZE);
+  let visibleCount = $state(PAGE_SIZE);
 
   /**
    * Grow the window while the sentinel (just below the grid) approaches the
@@ -37,7 +38,7 @@
     const observer = new IntersectionObserver(
       (records) => {
         if (records.some((record) => record.isIntersecting)) {
-          visible = Math.min(visible + PAGE_SIZE, results.length);
+          visibleCount = Math.min(visibleCount + PAGE_SIZE, results.length);
         }
       },
       { rootMargin: "800px 0px" },
@@ -46,11 +47,7 @@
     return () => observer.disconnect();
   }
 
-  let rendered = $derived(results.slice(0, visible));
-
-  function formatCount(count: number): string {
-    return count.toLocaleString("en-US");
-  }
+  let rendered = $derived(results.slice(0, visibleCount));
 </script>
 
 {#if results.length === 0}
