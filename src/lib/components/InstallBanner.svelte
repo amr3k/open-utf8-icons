@@ -7,10 +7,25 @@
    * Share → Add to Home Screen hint. Every icon is a native UTF-8 glyph.
    */
   import { pwa } from "#lib/pwa.svelte.js";
+  import { cubicOut } from "svelte/easing";
+  import { prefersReducedMotion } from "svelte/motion";
+  import { slide } from "svelte/transition";
+
+  const reducedMotion = $derived(prefersReducedMotion.current);
 </script>
 
 {#if pwa.banner}
-  <div class="mx-auto w-full max-w-7xl px-4 pt-3 sm:px-6">
+  <div
+    class="mx-auto w-full max-w-7xl px-4 pt-3 sm:px-6"
+    in:slide={{
+      duration: reducedMotion ? 0 : 240,
+      easing: cubicOut,
+    }}
+    out:slide={{
+      duration: reducedMotion ? 0 : 180,
+      easing: cubicOut,
+    }}
+  >
     <div
       role="region"
       aria-label="Install app"
