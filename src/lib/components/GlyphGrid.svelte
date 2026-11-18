@@ -43,25 +43,61 @@
   /** Cards per growth step; a smaller first page keeps the paint light. */
   const PAGE_SIZE = 48;
 
+  /** Start loading the next page this far before the sentinel is on screen. */
+  const PREFETCH_MARGIN = 800;
+
   /** How many cards are currently mounted. */
   let visibleCount = $state(PAGE_SIZE);
 
   /**
-   * Grow the window while the sentinel (just below the grid) approaches the
-   * viewport. Runs as an attachment: mounted when the sentinel enters the
-   * DOM, disconnected when it leaves.
+   * Grow the window while the sentinel (just below the grid) is within reach.
+   *
+   * Runs as an attachment: mounted when the sentinel enters the DOM,
+   * disconnected when it leaves. An IntersectionObserver alone is not enough
+   * here: it only fires when the intersection *changes*, so if the sentinel is
+   * still inside the prefetch margin after a page is appended (a tall viewport,
+   * or rows that don't push it past the margin) it never becomes "not
+   * intersecting" and growth stalls after a page or two. So each hit drains in
+   * a rAF loop until the sentinel is genuinely out of reach; scrolling back
+   * into range wakes the observer again.
    */
   function observeSentinel(el: HTMLDivElement): () => void {
+    let frame = 0;
+    let stopped = false;
+
+    /** Same bounds as the observer's rootMargin, measured on demand. */
+    function inReach(): boolean {
+      const rect = el.getBoundingClientRect();
+      return (
+        rect.top <= window.innerHeight + PREFETCH_MARGIN &&
+        rect.bottom >= -PREFETCH_MARGIN
+      );
+    }
+
+    function drain(): void {
+      if (stopped || frame !== 0) return;
+      if (visibleCount >= results.length || !inReach()) return;
+      visibleCount = Math.min(visibleCount + PAGE_SIZE, results.length);
+      // Re-measure once Svelte has mounted the appended rows.
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        drain();
+      });
+    }
+
     const observer = new IntersectionObserver(
       (records) => {
-        if (records.some((record) => record.isIntersecting)) {
-          visibleCount = Math.min(visibleCount + PAGE_SIZE, results.length);
-        }
+        if (records.some((record) => record.isIntersecting)) drain();
       },
-      { rootMargin: "800px 0px" },
+      { rootMargin: `${PREFETCH_MARGIN}px 0px` },
     );
     observer.observe(el);
-    return () => observer.disconnect();
+
+    return () => {
+      stopped = true;
+      if (frame !== 0) cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }
 
   let rendered = $derived(results.slice(0, visibleCount));
