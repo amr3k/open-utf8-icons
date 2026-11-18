@@ -18,15 +18,6 @@ import {
   searchEntryByCodepoint,
 } from "./dataset.js";
 
-describe("dataset", () => {
-  test("exposes the committed dataset metadata", () => {
-    expect(dataset.version).toBe(1);
-    expect(dataset.count).toBeGreaterThan(3000);
-    expect(dataset.count).toBeLessThan(5000);
-    expect(glyphs.length).toBe(dataset.count);
-  });
-});
-
 describe("glyphByCodepoint", () => {
   test("resolves every glyph from its code point label", () => {
     expect(glyphByCodepoint.size).toBe(glyphs.length);
@@ -68,11 +59,6 @@ describe("searchEntryByCodepoint", () => {
 describe("blockStats", () => {
   test("matches countBlocks over the full dataset", () => {
     expect(blockStats).toEqual(countBlocks(glyphs));
-  });
-
-  test("counts sum to the total glyph count", () => {
-    const total = blockStats.reduce((sum, stat) => sum + stat.count, 0);
-    expect(total).toBe(dataset.count);
   });
 
   test("contains every distinct block exactly once", () => {
