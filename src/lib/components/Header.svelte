@@ -28,7 +28,7 @@
             open-utf8-icons
           </h1>
           <span
-            class="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-600 dark:text-sky-400"
+            class="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-700 dark:text-sky-300"
             >v0.1.0</span
           >
         </div>

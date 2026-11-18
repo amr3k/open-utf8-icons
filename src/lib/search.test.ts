@@ -316,17 +316,17 @@ describe("scoreEntry", () => {
 
 describe("searchGlyphs", () => {
   test("empty query returns every glyph in dataset order", () => {
-    expect(searchGlyphs(entries, "")).toEqual(fixtures);
-    expect(searchGlyphs(entries, "   ")).toEqual(fixtures);
+    expect(searchGlyphs(fixtures, "")).toEqual(fixtures);
+    expect(searchGlyphs(fixtures, "   ")).toEqual(fixtures);
   });
 
   test("respects an explicit limit", () => {
-    expect(searchGlyphs(entries, "", 3)).toHaveLength(3);
-    expect(searchGlyphs(entries, "star", 2)).toHaveLength(2);
+    expect(searchGlyphs(fixtures, "", 3)).toHaveLength(3);
+    expect(searchGlyphs(fixtures, "star", 2)).toHaveLength(2);
   });
 
   test("ranks name prefix above word prefix above keyword prefix", () => {
-    const results = searchGlyphs(entries, "star");
+    const results = searchGlyphs(fixtures, "star");
     expect(results.map((glyph) => glyph.name)).toEqual([
       "BLACK STAR",
       "WHITE STAR",
@@ -336,7 +336,7 @@ describe("searchGlyphs", () => {
   });
 
   test("equal scores prefer shorter names, then dataset order", () => {
-    const results = searchGlyphs(entries, "star");
+    const results = searchGlyphs(fixtures, "star");
     // BLACK STAR, WHITE STAR, and SHOOTING STAR all match the complete word
     // "star" with the same score. SHOOTING STAR has the longest name, so the
     // two 10-char names win; between them dataset order decides.
@@ -347,27 +347,27 @@ describe("searchGlyphs", () => {
   });
 
   test("finds glyphs by exact character", () => {
-    expect(searchGlyphs(entries, "★")[0]).toBe(blackStar);
-    expect(searchGlyphs(entries, "$")[0]).toBe(dollar);
+    expect(searchGlyphs(fixtures, "★")[0]).toBe(blackStar);
+    expect(searchGlyphs(fixtures, "$")[0]).toBe(dollar);
   });
 
   test("finds glyphs by code point in every notation", () => {
-    expect(searchGlyphs(entries, "u+2605")).toEqual([blackStar]);
-    expect(searchGlyphs(entries, "2605")).toEqual([blackStar]);
-    expect(searchGlyphs(entries, "9733")).toEqual([blackStar]);
-    expect(searchGlyphs(entries, "u+0024")).toEqual([dollar]);
+    expect(searchGlyphs(fixtures, "u+2605")).toEqual([blackStar]);
+    expect(searchGlyphs(fixtures, "2605")).toEqual([blackStar]);
+    expect(searchGlyphs(fixtures, "9733")).toEqual([blackStar]);
+    expect(searchGlyphs(fixtures, "u+0024")).toEqual([dollar]);
   });
 
   test("finds multi-codepoint flags by code point and keyword", () => {
-    expect(searchGlyphs(entries, "u+1f1ff")).toEqual([zimbabweFlag]);
-    expect(searchGlyphs(entries, "1f1fc")).toEqual([zimbabweFlag]);
-    expect(searchGlyphs(entries, "127484")).toEqual([zimbabweFlag]);
-    expect(searchGlyphs(entries, "zw")).toEqual([zimbabweFlag]);
-    expect(searchGlyphs(entries, "zimbabwe")).toEqual([zimbabweFlag]);
+    expect(searchGlyphs(fixtures, "u+1f1ff")).toEqual([zimbabweFlag]);
+    expect(searchGlyphs(fixtures, "1f1fc")).toEqual([zimbabweFlag]);
+    expect(searchGlyphs(fixtures, "127484")).toEqual([zimbabweFlag]);
+    expect(searchGlyphs(fixtures, "zw")).toEqual([zimbabweFlag]);
+    expect(searchGlyphs(fixtures, "zimbabwe")).toEqual([zimbabweFlag]);
   });
 
   test("matches fuzzy subsequences across name words", () => {
-    const results = searchGlyphs(entries, "blstr");
+    const results = searchGlyphs(fixtures, "blstr");
     expect(results[0]).toBe(blackStar);
     // Short canonical names beat incidental subsequences inside long names.
     expect(results.indexOf(blackStar)).toBeLessThan(
@@ -376,19 +376,19 @@ describe("searchGlyphs", () => {
   });
 
   test("matches fuzzy keyword typos", () => {
-    expect(searchGlyphs(entries, "favrite")[0]).toBe(blackStar);
+    expect(searchGlyphs(fixtures, "favrite")[0]).toBe(blackStar);
   });
 
   test("matches multi-word keywords exactly", () => {
-    expect(searchGlyphs(entries, "cabo verde")).toEqual([capeVerdeFlag]);
+    expect(searchGlyphs(fixtures, "cabo verde")).toEqual([capeVerdeFlag]);
   });
 
   test("padded and unpadded hex queries are equivalent", () => {
-    expect(searchGlyphs(entries, "0024")).toEqual([dollar]);
-    expect(searchGlyphs(entries, "24")).toContain(dollar);
+    expect(searchGlyphs(fixtures, "0024")).toEqual([dollar]);
+    expect(searchGlyphs(fixtures, "24")).toContain(dollar);
   });
 
   test("returns an empty array for queries that match nothing", () => {
-    expect(searchGlyphs(entries, "qqqq")).toEqual([]);
+    expect(searchGlyphs(fixtures, "qqqq")).toEqual([]);
   });
 });
