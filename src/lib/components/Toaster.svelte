@@ -3,19 +3,31 @@
    * Renders the global toast stack (one instance in the root layout).
    * Pure UTF-8 feedback glyphs (✓ / ✕) come from the toast text itself.
    */
+  import { cubicOut } from "svelte/easing";
+  import { prefersReducedMotion } from "svelte/motion";
   import { fly } from "svelte/transition";
   import { toasts } from "#lib/toast.svelte.js";
+
+  const reducedMotion = $derived(prefersReducedMotion.current);
 </script>
 
 <div
-  class="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex flex-col items-center gap-2 px-4"
+  class="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex flex-col items-center gap-2 px-4 pb-[env(safe-area-inset-bottom)]"
   aria-live="polite"
 >
   {#each toasts.items as toast (toast.id)}
     <div
       class="pointer-events-auto max-w-full"
-      in:fly={{ y: 12, duration: 180 }}
-      out:fly={{ y: 8, duration: 150 }}
+      in:fly={{
+        y: reducedMotion ? 0 : 12,
+        duration: reducedMotion ? 0 : 200,
+        easing: cubicOut,
+      }}
+      out:fly={{
+        y: reducedMotion ? 0 : 8,
+        duration: reducedMotion ? 0 : 140,
+        easing: cubicOut,
+      }}
     >
       <button
         type="button"

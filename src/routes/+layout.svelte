@@ -59,7 +59,7 @@
   <meta name="twitter:image:alt" content={OG_IMAGE.alt} />
 </svelte:head>
 
-<div class="flex min-h-screen flex-col">
+<div class="flex min-h-dvh flex-col">
   <Header />
   <InstallBanner />
   {@render children()}

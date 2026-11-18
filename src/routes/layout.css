@@ -2,6 +2,11 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  /* Shared deceleration curve for one-shot entrances. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 :root {
   color-scheme: light;
 }
@@ -13,4 +18,58 @@
 html,
 body {
   min-height: 100%;
+}
+
+/* Reserve the scrollbar so opening the inspector never shifts the page. */
+html {
+  scrollbar-gutter: stable;
+}
+
+@layer base {
+  :where(h1, h2, h3, h4) {
+    text-wrap: balance;
+  }
+
+  :where(p) {
+    text-wrap: pretty;
+  }
+
+  /* One consistent keyboard-focus ring for every native control. */
+  :where(a, button, input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--color-sky-500);
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * Quick, GPU-friendly entrance used once on first paint. Delays are applied
+ * inline by the page, so the sequence reads top-to-bottom without being slow.
+ */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@layer components {
+  .rise-in {
+    animation: rise-in 320ms var(--ease-out-expo) backwards;
+  }
+
+  /* The inspector paints its own animated scrim instead of the UA backdrop. */
+  dialog::backdrop {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation: none;
+  }
 }

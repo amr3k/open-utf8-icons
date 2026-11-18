@@ -11,11 +11,16 @@
    * toast stack (`z-50`) and ignores pointer events so it never blocks the UI.
    */
   import { onMount } from "svelte";
+  import { cubicOut } from "svelte/easing";
+  import { prefersReducedMotion } from "svelte/motion";
   import { online } from "svelte/reactivity/window";
+  import { fade, fly } from "svelte/transition";
   import { isShellCached } from "#lib/pwa.js";
 
   let mounted = $state(false);
   let shellCached = $state(false);
+
+  const reducedMotion = $derived(prefersReducedMotion.current);
 
   async function refreshShellCache() {
     shellCached = await isShellCached();
@@ -41,6 +46,12 @@
     <p
       role="status"
       aria-live="polite"
+      in:fly={{
+        y: reducedMotion ? 0 : 6,
+        duration: reducedMotion ? 0 : 180,
+        easing: cubicOut,
+      }}
+      out:fade={{ duration: reducedMotion ? 0 : 120 }}
       class="inline-flex max-w-full items-center gap-1.5 rounded-full border border-amber-300/80 bg-amber-50/95 px-3 py-1.5 text-xs font-medium text-amber-900 shadow-lg backdrop-blur dark:border-amber-900/60 dark:bg-amber-950/90 dark:text-amber-200"
     >
       <span class="shrink-0 leading-none" aria-hidden="true">⚡</span>

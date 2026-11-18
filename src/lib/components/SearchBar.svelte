@@ -104,7 +104,7 @@
       placeholder="Search glyphs — name, keyword, or code point"
       aria-label="Search glyphs by name, keyword, or code point"
       aria-keyshortcuts="/"
-      class="h-12 w-full rounded-2xl border border-zinc-200 bg-white pl-11 pr-14 text-sm text-zinc-900 shadow-2xs outline-none transition placeholder:text-zinc-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:[&::-webkit-search-cancel-button]:hidden"
+      class="h-12 w-full rounded-2xl border border-zinc-200 bg-white pl-11 pr-14 text-sm text-zinc-900 shadow-2xs outline-none transition placeholder:text-zinc-500 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-400 dark:[&::-webkit-search-cancel-button]:hidden"
     />
     <div class="absolute right-3 top-1/2 -translate-y-1/2">
       {#if query !== ""}
