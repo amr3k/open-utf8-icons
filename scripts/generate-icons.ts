@@ -19,7 +19,12 @@
 
 import { mkdirSync } from "node:fs";
 import path from "node:path";
-import type { Glyph, IconsDataset } from "../src/lib/data/types.js";
+import {
+  PACKED_VERSION,
+  type Glyph,
+  type IconsDataset,
+} from "../src/lib/data/types.js";
+import { packDataset } from "../src/lib/data/pack.js";
 import {
   collectBlockCodepoints,
   CURATED_BLOCKS,
@@ -47,7 +52,7 @@ import {
 } from "./lib/unicode-scripts.js";
 
 /** Dataset schema version — bump when the output shape changes incompatibly. */
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = PACKED_VERSION;
 
 /** Default Unicode version to extract from. Bump to refresh the dataset. */
 const DEFAULT_UNICODE_VERSION = "16.0.0";
@@ -201,14 +206,17 @@ function printReport(
   unicodeVersion: string,
   origin: UcdOrigin,
   json: string,
+  expandedBytes: number,
   outPath: string,
 ): void {
   const rawBytes = Buffer.byteLength(json, "utf8");
   const gzipBytes = Bun.gzipSync(json).length;
+  const saving = Math.round((1 - rawBytes / expandedBytes) * 100);
   console.log(`✓ Wrote ${result.glyphs.length} glyphs → ${outPath}`);
   console.log(`  Source: Unicode ${unicodeVersion} UCD (${origin})`);
   console.log(
-    `  Payload: ${formatBytes(rawBytes)} raw / ${formatBytes(gzipBytes)} gzip (minified)`,
+    `  Payload: ${formatBytes(rawBytes)} raw / ${formatBytes(gzipBytes)} gzip (packed, ` +
+      `${saving}% smaller than the ${formatBytes(expandedBytes)} expanded form)`,
   );
   for (const [block, count] of result.blockCounts) {
     console.log(`    ${block.padEnd(42)} ${String(count).padStart(4)}`);
@@ -270,11 +278,20 @@ async function main(): Promise<void> {
     count: result.glyphs.length,
     glyphs: result.glyphs,
   };
-  const json = JSON.stringify(dataset);
+  const expandedBytes = Buffer.byteLength(JSON.stringify(dataset));
+  const packed = packDataset(dataset);
+  const json = JSON.stringify(packed);
 
   mkdirSync(path.dirname(opts.outPath), { recursive: true });
   await Bun.write(opts.outPath, json);
-  printReport(result, opts.unicodeVersion, source.origin, json, opts.outPath);
+  printReport(
+    result,
+    opts.unicodeVersion,
+    source.origin,
+    json,
+    expandedBytes,
+    opts.outPath,
+  );
 }
 
 if (import.meta.main) {

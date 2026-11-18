@@ -283,7 +283,7 @@
                 >
                   <span class="min-w-0">
                     <span
-                      class="block text-[10px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500"
+                      class="block text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
                     >
                       {format.label}
                     </span>
@@ -294,7 +294,7 @@
                     </span>
                   </span>
                   <span
-                    class="shrink-0 text-[11px] font-medium text-zinc-400 transition-colors group-hover:text-sky-600 dark:text-zinc-500 dark:group-hover:text-sky-400"
+                    class="shrink-0 text-[11px] font-medium text-zinc-500 transition-colors group-hover:text-sky-600 dark:text-zinc-400 dark:group-hover:text-sky-400"
                   >
                     <span aria-hidden="true">📋</span>
                     <span class="sr-only">Copy</span>
@@ -318,7 +318,7 @@
             <dt class="text-zinc-500 dark:text-zinc-400">Category</dt>
             <dd class="text-right text-zinc-800 dark:text-zinc-200">
               <span class="font-mono">{glyph.category}</span>
-              <span class="text-zinc-400 dark:text-zinc-500"
+              <span class="text-zinc-500 dark:text-zinc-400"
                 >· {categoryLabel(glyph.category)}</span
               >
             </dd>

@@ -16,14 +16,17 @@
  * - greedy subsequence ("fuzzy") matching over names and keywords
  *
  * Results sort by descending score; equal scores prefer shorter (more
- * canonical) names; remaining ties keep dataset order (stable sort).
+ * canonical) names; remaining ties keep input order (stable sort).
+ *
+ * Indexes are built lazily, one glyph at a time, and cached on the glyph
+ * object: the initial page load never pays for an index it may not use.
  */
 
 import type { Glyph } from "./data/types.js";
 
 /** Precomputed, lowercase search index for a single glyph. */
 export interface SearchEntry {
-  /** Position of the glyph in dataset order (used as a stable tie-breaker). */
+  /** Position of the glyph in the source list (informational only). */
   index: number;
   glyph: Glyph;
   /** Lowercased official name, e.g. `"black star"`. */
@@ -41,25 +44,45 @@ function normalizeHex(raw: string): string {
   return raw.replace(/^0+/, "") || "0";
 }
 
+/** Build the lowercase index record for one glyph. */
+function createSearchEntry(glyph: Glyph, index: number): SearchEntry {
+  const nameLower = glyph.name.toLowerCase();
+  return {
+    index,
+    glyph,
+    nameLower,
+    nameWords: nameLower.split(" "),
+    hexParts: glyph.hex.split(" ").map(normalizeHex),
+    decParts:
+      typeof glyph.dec === "number"
+        ? [String(glyph.dec)]
+        : glyph.dec.split(" "),
+  };
+}
+
 /**
  * Build the precomputed search index for a set of glyphs.
- * Run once at dataset load; the result is read-only and shared.
+ * Used by tests and tooling; the UI searches glyphs directly through
+ * `searchGlyphs`, which indexes each glyph on first use.
  */
 export function buildSearchEntries(glyphs: readonly Glyph[]): SearchEntry[] {
-  return glyphs.map((glyph, index) => {
-    const nameLower = glyph.name.toLowerCase();
-    return {
-      index,
-      glyph,
-      nameLower,
-      nameWords: nameLower.split(" "),
-      hexParts: glyph.hex.split(" ").map(normalizeHex),
-      decParts:
-        typeof glyph.dec === "number"
-          ? [String(glyph.dec)]
-          : glyph.dec.split(" "),
-    };
-  });
+  return glyphs.map((glyph, index) => createSearchEntry(glyph, index));
+}
+
+/**
+ * Index records cached per glyph object. The first keystroke builds the
+ * index for the glyphs it touches; later searches reuse the same records,
+ * so the dataset arrives without a startup index build.
+ */
+const entryCache = new WeakMap<Glyph, SearchEntry>();
+
+/** Index record for a glyph, built (and cached) on first use. */
+export function searchEntryFor(glyph: Glyph, index = 0): SearchEntry {
+  const cached = entryCache.get(glyph);
+  if (cached !== undefined) return cached;
+  const entry = createSearchEntry(glyph, index);
+  entryCache.set(glyph, entry);
+  return entry;
 }
 
 /** Normalize user input: trim, lowercase, collapse runs of whitespace. */
@@ -263,36 +286,39 @@ export interface SearchStatus {
 }
 
 /**
- * Search a precomputed index and return the best-ranked glyphs.
+ * Search a set of glyphs and return the best-ranked matches.
  *
- * An empty query returns every glyph in dataset order. Results are sorted by
- * descending score; equal scores prefer shorter names, then dataset order.
+ * An empty query returns the glyphs in their original order (the same array,
+ * so callers pay nothing for the default view). Otherwise every glyph is
+ * scored through its cached search entry; results sort by descending score;
+ * equal scores prefer shorter names, then input order (stable sort).
  * `limit` defaults to unlimited — callers render the list windowed instead of
  * truncating matches the user can never reach.
  */
 export function searchGlyphs(
-  entries: readonly SearchEntry[],
+  glyphs: readonly Glyph[],
   query: string,
   limit: number = Number.POSITIVE_INFINITY,
-): Glyph[] {
+): readonly Glyph[] {
   const normalized = normalizeQuery(query);
 
   if (normalized === "") {
-    const all = entries.slice(0, Math.min(entries.length, limit));
-    return all.map((entry) => entry.glyph);
+    return limit >= glyphs.length ? glyphs : glyphs.slice(0, limit);
   }
 
   const codepoint = parseCodepointQuery(normalized);
   const hits: { glyph: Glyph; score: number }[] = [];
-  for (const entry of entries) {
+  for (let index = 0; index < glyphs.length; index++) {
+    const glyph = glyphs[index]!;
+    const entry = searchEntryFor(glyph, index);
     const score = scoreEntry(entry, normalized, codepoint);
     if (score !== null) {
-      hits.push({ glyph: entry.glyph, score });
+      hits.push({ glyph, score });
     }
   }
 
   // Sort by score; equal scores prefer shorter (more canonical) names, and
-  // remaining ties keep dataset order (Array#sort is stable).
+  // remaining ties keep input order (Array#sort is stable).
   hits.sort(
     (a, b) => b.score - a.score || a.glyph.name.length - b.glyph.name.length,
   );

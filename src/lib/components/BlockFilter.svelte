@@ -40,7 +40,11 @@
       class="{CHIP_BASE} {active ? CHIP_ACTIVE : CHIP_INACTIVE}"
     >
       <span>{label}</span>
-      <span class="tabular-nums opacity-60">{formatCount(count)}</span>
+      <span
+        class="tabular-nums {active
+          ? 'text-zinc-300 dark:text-zinc-600'
+          : 'text-zinc-600 dark:text-zinc-400'}">{formatCount(count)}</span
+      >
     </button>
   {/snippet}
 

@@ -40,7 +40,8 @@
     emptyHint = "Try a name like arrow, a keyword like favorite, or a code point like u+2605.",
   }: Props = $props();
 
-  const PAGE_SIZE = 96;
+  /** Cards per growth step; a smaller first page keeps the paint light. */
+  const PAGE_SIZE = 48;
 
   /** How many cards are currently mounted. */
   let visibleCount = $state(PAGE_SIZE);
@@ -112,7 +113,7 @@
     aria-live="polite"
   >
     Showing {formatCount(rendered.length)}
-    <span class="text-zinc-400 dark:text-zinc-500">of</span>
+    <span class="text-zinc-500 dark:text-zinc-400">of</span>
     {formatCount(results.length)}
     {#if rendered.length < results.length}
       <span class="ml-1" aria-hidden="true">▾ scroll for more</span>

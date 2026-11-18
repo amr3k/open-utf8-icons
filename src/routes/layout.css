@@ -44,15 +44,18 @@ html {
 /*
  * Quick, GPU-friendly entrance used once on first paint. Delays are applied
  * inline by the page, so the sequence reads top-to-bottom without being slow.
+ *
+ * Transform-only on purpose: an opacity keyframe keeps the element invisible
+ * until the animation starts, which delays Largest Contentful Paint whenever
+ * the main thread is busy. A pure translate paints immediately and still
+ * gives the page its rise.
  */
 @keyframes rise-in {
   from {
-    opacity: 0;
     transform: translate3d(0, 8px, 0);
   }
 
   to {
-    opacity: 1;
     transform: translate3d(0, 0, 0);
   }
 }
