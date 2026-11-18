@@ -97,7 +97,7 @@ The homepage is a fully offline, client-side directory over the dataset — no n
 - **Instant search** (pure `src/lib/search.ts`, zero dependencies): exact glyph / name / word / keyword matches, name & keyword prefixes and substrings, code point lookups in every notation (`u+2605`, `0x2605`, `2605`, `9733`), code point prefixes, and greedy fuzzy subsequences. Equal scores prefer shorter, more canonical names. Warm cost over the full 4,021-glyph index: **2–6 ms per keystroke**.
 - **Keyboard shortcuts**: `/` focuses the search field from anywhere, `Esc` clears it (or blurs when already empty).
 - **Category browser**: horizontally scrollable block chips with live counts; the filter composes with search.
-- **Windowed grid**: cards render in 96-glyph pages, grown by an IntersectionObserver sentinel as you scroll, and each card uses `content-visibility: auto` so off-screen tiles skip painting entirely — smooth scrolling with zero virtualization dependencies. Ranked searches cap at 500 results; browsing shows the full dataset.
+- **Windowed grid**: cards render in 96-glyph pages, grown by an IntersectionObserver sentinel as you scroll, and each card uses `content-visibility: auto` so off-screen tiles skip painting entirely — smooth scrolling with zero virtualization dependencies. Every match stays reachable — no result truncation.
 - **Quick copy**: one click on any glyph copies it in the selected format (Char / HTML / CSS / JS / `U+`), confirmed by a toast — Web Clipboard API with a legacy `execCommand` fallback.
 
 ---

@@ -10,7 +10,6 @@ import {
   blockStats,
   dataset,
   glyphs,
-  RESULT_LIMIT,
   searchEntries,
 } from "./dataset.js";
 
@@ -58,12 +57,5 @@ describe("searchEntries", () => {
     const last = searchEntries.at(-1);
     expect(last?.index).toBe(glyphs.length - 1);
     expect(last?.glyph).toBe(glyphs.at(-1));
-  });
-});
-
-describe("RESULT_LIMIT", () => {
-  test("is large enough for browsing, small enough for the DOM", () => {
-    expect(RESULT_LIMIT).toBeGreaterThanOrEqual(200);
-    expect(RESULT_LIMIT).toBeLessThanOrEqual(glyphs.length);
   });
 });

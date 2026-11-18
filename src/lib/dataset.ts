@@ -34,10 +34,3 @@ export const blockStats: readonly BlockStat[] = (() => {
   }
   return [...counts.entries()].map(([block, count]) => ({ block, count }));
 })();
-
-/**
- * Hard cap on rendered search results. The dataset tops out at ~4k glyphs,
- * so this only kicks in for broad codepoint-prefix queries; the grid then
- * asks the user to refine the query instead of flooding the DOM.
- */
-export const RESULT_LIMIT = 500;

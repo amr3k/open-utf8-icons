@@ -2,14 +2,9 @@
   import SearchBar from "#lib/components/SearchBar.svelte";
   import BlockFilter from "#lib/components/BlockFilter.svelte";
   import GlyphGrid from "#lib/components/GlyphGrid.svelte";
-  import {
-    blockStats,
-    dataset,
-    glyphs,
-    RESULT_LIMIT,
-    searchEntries,
-  } from "#lib/dataset.js";
-  import { searchGlyphs } from "#lib/search.js";
+  import { blockStats, dataset, glyphs, searchEntries } from "#lib/dataset.js";
+  import { searchGlyphs, type SearchStatus } from "#lib/search.js";
+  import { formatCount } from "#lib/format.js";
   import {
     copyToClipboard,
     getCopyText,
@@ -30,18 +25,16 @@
   );
 
   /**
-   * Scored search results over the scoped entries. Browsing with an empty
-   * query returns the full scope for windowed rendering; ranked results are
-   * capped at RESULT_LIMIT so broad codepoint queries don't flood the DOM.
+   * Scored search results over the scoped entries. Ranked matches are never
+   * truncated — the windowed grid renders them 96 at a time.
    */
-  let results = $derived(
-    searchGlyphs(contextEntries, query, {
-      limit: query.trim() === "" ? Number.POSITIVE_INFINITY : RESULT_LIMIT,
-    }),
-  );
+  let results = $derived(searchGlyphs(contextEntries, query));
 
-  let filtered = $derived(query.trim() !== "" || block !== null);
-  let capped = $derived(query.trim() !== "" && results.length === RESULT_LIMIT);
+  let status = $derived<SearchStatus>({
+    matchCount: results.length,
+    totalCount: contextEntries.length,
+    filtersActive: query.trim() !== "" || block !== null,
+  });
 
   /** 1-click quick copy in the selected format, confirmed by a toast. */
   async function handleCopy(glyph: Glyph) {
@@ -68,22 +61,14 @@
       <span class="text-sky-600 dark:text-sky-400">native UTF-8</span> glyphs.
     </h2>
     <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-      {dataset.count.toLocaleString("en-US")} glyphs from Unicode {dataset.unicode}
+      {formatCount(dataset.count)} glyphs from Unicode {dataset.unicode}
       &middot; instant offline search &middot; press <kbd
-        class="inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-1 text-[10px] font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
-        aria-hidden="true">/</kbd
+        class="inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-1 text-[10px] font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">/</kbd
       > to search
     </p>
   </div>
 
-  <SearchBar
-    bind:query
-    bind:copyFormat
-    matchCount={results.length}
-    totalCount={contextEntries.length}
-    {capped}
-    {filtered}
-  />
+  <SearchBar bind:query bind:copyFormat {status} />
 
   <BlockFilter blocks={blockStats} total={glyphs.length} bind:block />
 
