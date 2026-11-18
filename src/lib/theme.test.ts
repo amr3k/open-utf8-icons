@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { resolveTheme, getNextThemeMode, getThemeIcon } from "./theme-utils.js";
+import {
+  THEME_COLORS,
+  getThemeColor,
+  resolveTheme,
+  getNextThemeMode,
+  getThemeIcon,
+} from "./theme-utils.js";
 
 describe("theme utilities", () => {
   test("resolveTheme resolves explicit light and dark modes regardless of system preference", () => {
@@ -26,5 +32,11 @@ describe("theme utilities", () => {
     expect(getThemeIcon("light")).toBe("☀");
     expect(getThemeIcon("dark")).toBe("☾");
     expect(getThemeIcon("system")).toBe("◑");
+  });
+
+  test("getThemeColor matches the browser chrome for each resolved theme", () => {
+    expect(getThemeColor("light")).toBe("#ffffff");
+    expect(getThemeColor("dark")).toBe("#09090b");
+    expect(THEME_COLORS).toEqual({ light: "#ffffff", dark: "#09090b" });
   });
 });
