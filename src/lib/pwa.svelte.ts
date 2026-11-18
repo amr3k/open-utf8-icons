@@ -74,8 +74,7 @@ class PwaManager {
     if (typeof window === "undefined" || this.#initialized) return;
 
     this.dismissed = this.#readDismissed();
-    this.installed =
-      standaloneDisplay.current || navigator.standalone === true;
+    this.installed = standaloneDisplay.current || navigator.standalone === true;
     this.ios =
       !this.installed &&
       isIosDevice(

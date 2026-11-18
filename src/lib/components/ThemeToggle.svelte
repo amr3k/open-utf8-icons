@@ -32,7 +32,8 @@
         ? "Follow system preference"
         : `Switch to ${label} mode`}
     >
-      <span class="text-sm leading-none sm:mr-1" aria-hidden="true">{icon}</span>
+      <span class="text-sm leading-none sm:mr-1" aria-hidden="true">{icon}</span
+      >
       <span class="hidden sm:inline">{label}</span>
     </PillButton>
   {/each}
