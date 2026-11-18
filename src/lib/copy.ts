@@ -5,12 +5,16 @@
  * card; the toast confirms what landed on the clipboard. All formats are
  * precomputed in the dataset, so this module only picks a field and talks
  * to the Web Clipboard API (with a legacy fallback for non-secure contexts).
+ *
+ * The JavaScript escape is intentionally absent — Phase 3 specifies
+ * character, HTML, CSS, and code point; the full developer formats
+ * (including JS and URL encoding) arrive with the Phase 4 inspector.
  */
 
 import type { Glyph } from "./data/types.js";
 
 /** Formats available for the 1-click quick copy. */
-export type CopyFormat = "char" | "html" | "css" | "js" | "codepoint";
+export type CopyFormat = "char" | "html" | "css" | "codepoint";
 
 /** UI metadata for a copy format. */
 export interface CopyFormatOption {
@@ -26,7 +30,6 @@ export const COPY_FORMATS: readonly CopyFormatOption[] = [
   { id: "char", label: "Char", hint: "Copy the character itself, e.g. ★" },
   { id: "html", label: "HTML", hint: "Copy the decimal HTML entity, e.g. &#9733;" },
   { id: "css", label: "CSS", hint: "Copy the CSS escape, e.g. \\2605" },
-  { id: "js", label: "JS", hint: "Copy the JavaScript escape, e.g. \\u2605" },
   { id: "codepoint", label: "U+", hint: "Copy the Unicode code point, e.g. U+2605" },
 ];
 
@@ -39,8 +42,6 @@ export function getCopyText(glyph: Glyph, format: CopyFormat): string {
       return glyph.htmlEntity;
     case "css":
       return glyph.cssEscape;
-    case "js":
-      return glyph.jsEscape;
     case "codepoint":
       return glyph.codepoint;
   }

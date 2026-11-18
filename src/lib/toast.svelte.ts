@@ -24,7 +24,7 @@ class ToastManager {
   #timers = new Map<number, ReturnType<typeof setTimeout>>();
 
   /** Show a toast; returns its id so callers can dismiss it early. */
-  show(text: string, durationMs: number = DEFAULT_DURATION_MS): number {
+  show(text: string): number {
     const id = this.#nextId++;
     this.items.push({ id, text });
 
@@ -35,7 +35,7 @@ class ToastManager {
       this.dismiss(oldest.id);
     }
 
-    const timer = setTimeout(() => this.dismiss(id), durationMs);
+    const timer = setTimeout(() => this.dismiss(id), DEFAULT_DURATION_MS);
     this.#timers.set(id, timer);
     return id;
   }

@@ -42,7 +42,7 @@ describe("COPY_FORMATS", () => {
   test("covers every format id exactly once", () => {
     const ids = COPY_FORMATS.map((option) => option.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids.sort()).toEqual(["char", "codepoint", "css", "html", "js"]);
+    expect(ids.sort()).toEqual(["char", "codepoint", "css", "html"]);
   });
 
   test("every option has a label and hint", () => {
@@ -58,7 +58,6 @@ describe("getCopyText", () => {
     expect(getCopyText(star, "char")).toBe("★");
     expect(getCopyText(star, "html")).toBe("&#9733;");
     expect(getCopyText(star, "css")).toBe("\\2605");
-    expect(getCopyText(star, "js")).toBe("\\u2605");
     expect(getCopyText(star, "codepoint")).toBe("U+2605");
   });
 
@@ -66,7 +65,6 @@ describe("getCopyText", () => {
     expect(getCopyText(flag, "char")).toBe("🇿🇼");
     expect(getCopyText(flag, "html")).toBe("&#127487;&#127484;");
     expect(getCopyText(flag, "css")).toBe("\\1f1ff \\1f1fc");
-    expect(getCopyText(flag, "js")).toBe("\\u{1f1ff}\\u{1f1fc}");
     expect(getCopyText(flag, "codepoint")).toBe("U+1F1FF U+1F1FC");
   });
 });
