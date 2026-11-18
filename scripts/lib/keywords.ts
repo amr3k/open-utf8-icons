@@ -365,10 +365,6 @@ const CURATED_KEYWORDS: Record<string, string[]> = {
   "U+2B1C": ["square", "white", "large", "outline", "big"],
 
   // Religion & culture
-  "U+271D": ["cross", "latin", "christian", "religion", "church"],
-  "U+2721": ["star", "david", "jewish", "religion"],
-  "U+2638": ["wheel", "dharma", "buddhist", "religion"],
-  "U+262F": ["yin", "yang", "balance", "tao", "harmony"],
   "U+262A": ["star", "crescent", "islam", "muslim", "religion"],
   "U+262E": ["peace", "dove", "olive", "branch"],
   "U+262D": ["hammer", "sickle", "communism", "ussr"],
@@ -376,9 +372,6 @@ const CURATED_KEYWORDS: Record<string, string[]> = {
   "U+2623": ["biohazard", "danger", "warning", "virus"],
   "U+2620": ["skull", "crossbones", "poison", "danger", "death", "pirate"],
   "U+1F480": ["skull", "death", "bones", "dead", "halloween"],
-  "U+1F549": ["om", "hindu", "religion", "mantra"],
-  "U+1F54D": ["synagogue", "star", "david", "jewish", "temple"],
-  "U+1F6D5": ["temple", "hindu", "religion"],
 
   // Sports
   "U+26BD": ["soccer", "football", "ball", "sports", "fifa"],
@@ -409,7 +402,6 @@ const CURATED_KEYWORDS: Record<string, string[]> = {
 
   // Travel & transport (Dingbats & Transport block)
   "U+2708": ["airplane", "flight", "travel", "plane", "airport"],
-  "U+26EA": ["church", "temple", "building", "religion"],
   "U+26F0": ["mountain", "hill", "geo"],
   "U+26F1": ["beach", "umbrella", "parasol", "resort"],
   "U+26F2": ["fountain", "water", "park"],

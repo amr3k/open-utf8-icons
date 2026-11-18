@@ -20,6 +20,7 @@ import {
   toHex,
 } from "../../../scripts/lib/formats.js";
 import { MAX_KEYWORDS } from "../../../scripts/lib/keywords.js";
+import { EXCLUDED_CODEPOINTS } from "../../../scripts/lib/curation.js";
 import packed from "./icons.json";
 import type { Glyph } from "./types.js";
 import { CATEGORY_LABELS, PACKED_VERSION } from "./types.js";
@@ -164,6 +165,20 @@ describe("committed dataset (src/lib/data/icons.json)", () => {
         values.length,
       );
       expect(values.length, `${label} is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  test("honours the curated exclusions", async () => {
+    const dataset = unpackDataset(packed);
+    const present = new Set(dataset.glyphs.map((glyph) => glyph.codepoint));
+
+    for (const cp of EXCLUDED_CODEPOINTS) {
+      const label = `U+${cp.toString(16).toUpperCase()}`;
+      expect(present.has(label), `excluded glyph ${label} leaked`).toBe(false);
+    }
+
+    for (const label of ["U+262A", "U+1F54B", "U+1F54C"]) {
+      expect(present.has(label), `missing glyph ${label}`).toBe(true);
     }
   });
 
