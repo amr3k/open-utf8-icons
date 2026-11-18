@@ -7,13 +7,14 @@
  * JSON is bundled exactly once.
  */
 
-import iconsJson from "./data/icons.json";
+import packedJson from "./data/icons.json";
+import { unpackDataset } from "./data/unpack.js";
 import type { Glyph, IconsDataset } from "./data/types.js";
 import { glyphHash, parseGlyphHash } from "./permalink.js";
 import { buildSearchEntries, type SearchEntry } from "./search.js";
 
-/** The committed dataset produced by `scripts/generate-icons.ts`. */
-export const dataset: IconsDataset = iconsJson;
+/** The committed dataset, expanded from its packed wire format. */
+export const dataset: IconsDataset = unpackDataset(packedJson);
 
 /** Every glyph, in curated dataset order. */
 export const glyphs: readonly Glyph[] = dataset.glyphs;
