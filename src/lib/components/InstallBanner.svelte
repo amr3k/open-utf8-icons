@@ -9,7 +9,7 @@
    * icon is a native UTF-8 glyph.
    */
   import { pwa } from "#lib/pwa.svelte.js";
-  import { cubicOut } from "svelte/easing";
+  import { flyOffset } from "#lib/motion.js";
   import { prefersReducedMotion } from "svelte/motion";
   import { fly } from "svelte/transition";
 
@@ -19,16 +19,8 @@
 {#if pwa.banner}
   <div
     class="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4 pb-[env(safe-area-inset-bottom)]"
-    in:fly={{
-      y: reducedMotion ? 0 : 16,
-      duration: reducedMotion ? 0 : 220,
-      easing: cubicOut,
-    }}
-    out:fly={{
-      y: reducedMotion ? 0 : 12,
-      duration: reducedMotion ? 0 : 160,
-      easing: cubicOut,
-    }}
+    in:fly={flyOffset(reducedMotion, { y: 16 }, 220)}
+    out:fly={flyOffset(reducedMotion, { y: 12 }, 160)}
   >
     <div
       role="region"

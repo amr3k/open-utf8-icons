@@ -29,10 +29,14 @@
     theme.init();
     library.init();
     pwa.init();
-    return () => {
-      theme.destroy();
-      pwa.destroy();
-    };
+    return () => pwa.destroy();
+  });
+
+  // Mirror the resolved theme into the document. Reading `theme.resolved`
+  // inside the effect is what keeps `system` mode live: it re-runs when the
+  // mode changes and when the OS preference flips.
+  $effect(() => {
+    theme.apply();
   });
 </script>
 
