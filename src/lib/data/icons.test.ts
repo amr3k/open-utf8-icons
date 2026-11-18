@@ -45,6 +45,7 @@ function glyphIssues(raw: Record<string, unknown>): string[] {
   const cssEscape = raw["cssEscape"];
   const jsEscape = raw["jsEscape"];
   const category = raw["category"];
+  const script = raw["script"];
   const block = raw["block"];
   const keywords = raw["keywords"];
 
@@ -58,6 +59,7 @@ function glyphIssues(raw: Record<string, unknown>): string[] {
     cssEscape,
     jsEscape,
     category,
+    script,
     block,
   };
   for (const [field, value] of Object.entries(strings)) {
@@ -223,6 +225,7 @@ describe("committed dataset (src/lib/data/icons.json)", () => {
       expect(star["name"]).toBe("BLACK STAR");
       expect(star["dec"]).toBe(9733);
       expect(star["htmlEntity"]).toBe("&#9733;");
+      expect(star["script"]).toBe("Common");
       expect(star["block"]).toBe("Miscellaneous Symbols");
       expect(star["keywords"]).toContain("favorite");
     }

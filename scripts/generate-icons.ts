@@ -35,10 +35,16 @@ import { formatCodepoints } from "./lib/formats.js";
 import { buildGlyph } from "./lib/glyph.js";
 import { ALL_CURATED_KEYWORDS } from "./lib/keywords.js";
 import {
+  loadUcdFile,
   loadUnicodeData,
   parseUnicodeData,
   type UcdOrigin,
 } from "./lib/ucd.js";
+import {
+  parseScriptsData,
+  scriptForCodePoint,
+  type ScriptRange,
+} from "./lib/unicode-scripts.js";
 
 /** Dataset schema version — bump when the output shape changes incompatibly. */
 const SCHEMA_VERSION = 1;
@@ -58,6 +64,7 @@ interface CliOptions {
   unicodeVersion: string;
   outPath: string;
   localUcdPath?: string;
+  localScriptsPath?: string;
   force: boolean;
 }
 
@@ -68,7 +75,8 @@ Options:
   --unicode <version>  Unicode version to extract (default: ${DEFAULT_UNICODE_VERSION})
   --out <path>         Output JSON path (default: ${DEFAULT_OUT_PATH})
   --ucd <path>         Use a local UnicodeData.txt instead of downloading
-  --force              Re-download the UCD file even if cached
+  --scripts <path>     Use a local Scripts.txt instead of downloading
+  --force              Re-download the UCD files even if cached
   -h, --help           Show this help`);
 }
 
@@ -95,6 +103,9 @@ function parseArgs(argv: string[]): CliOptions | null {
         break;
       case "--ucd":
         opts.localUcdPath = value();
+        break;
+      case "--scripts":
+        opts.localScriptsPath = value();
         break;
       case "--out":
         opts.outPath = value();
@@ -136,6 +147,7 @@ interface ExtractionResult {
 
 function extractGlyphs(
   entries: Map<number, { name: string; category: string }>,
+  scriptRanges: readonly ScriptRange[],
 ): ExtractionResult {
   const glyphs: Glyph[] = [];
   const blockCounts = new Map<string, number>();
@@ -156,6 +168,7 @@ function extractGlyphs(
           codepoints: [cp],
           name: entry.name,
           category: entry.category,
+          script: scriptForCodePoint(scriptRanges, cp),
           block: block.name,
         }),
       );
@@ -166,11 +179,13 @@ function extractGlyphs(
 
   const sortedRegions = [...FLAG_REGIONS].sort(compareByName);
   for (const region of sortedRegions) {
+    const codepoints = flagCodepoints(region.code);
     glyphs.push(
       buildGlyph({
-        codepoints: flagCodepoints(region.code),
+        codepoints,
         name: flagEntryName(region),
         category: "So",
+        script: scriptForCodePoint(scriptRanges, codepoints[0] ?? 0),
         block: FLAGS_BLOCK,
         extraKeywords: flagKeywords(region),
       }),
@@ -220,26 +235,34 @@ async function main(): Promise<void> {
     return;
   }
 
-  const ucdUrl = `https://www.unicode.org/Public/${opts.unicodeVersion}/ucd/UnicodeData.txt`;
-  const cachePath = path.join(
-    CACHE_DIR,
-    `UnicodeData-${opts.unicodeVersion}.txt`,
-  );
-
-  console.log("ツ open-utf8-icons — dataset extraction");
-  console.log(`  Unicode version: ${opts.unicodeVersion}`);
+  const ucdBaseUrl = `https://www.unicode.org/Public/${opts.unicodeVersion}/ucd`;
   const source = await loadUnicodeData({
-    url: ucdUrl,
-    cachePath,
+    url: `${ucdBaseUrl}/UnicodeData.txt`,
+    cachePath: path.join(CACHE_DIR, `UnicodeData-${opts.unicodeVersion}.txt`),
     localPath: opts.localUcdPath,
     force: opts.force,
   });
+  const scriptsSource = await loadUcdFile({
+    url: `${ucdBaseUrl}/Scripts.txt`,
+    cachePath: path.join(CACHE_DIR, `Scripts-${opts.unicodeVersion}.txt`),
+    localPath: opts.localScriptsPath,
+    force: opts.force,
+    label: "Scripts.txt",
+  });
+
+  console.log("ツ open-utf8-icons — dataset extraction");
+  console.log(`  Unicode version: ${opts.unicodeVersion}`);
   console.log(`  UCD source: ${source.origin}`);
 
   const entries = parseUnicodeData(source.text);
   console.log(`  Parsed ${entries.size} assigned code points`);
 
-  const result = extractGlyphs(entries);
+  const scriptRanges = parseScriptsData(scriptsSource.text);
+  console.log(
+    `  Scripts source: ${scriptsSource.origin} (${scriptRanges.length} ranges)`,
+  );
+
+  const result = extractGlyphs(entries, scriptRanges);
   const dataset: IconsDataset = {
     version: SCHEMA_VERSION,
     unicode: opts.unicodeVersion,

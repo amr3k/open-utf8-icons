@@ -72,21 +72,23 @@ bun run preview
 
 The app is powered by a self-contained, pre-generated dataset — [`src/lib/data/icons.json`](src/lib/data/icons.json) — containing **4,021 glyphs** across 22 curated categories, extracted from **Unicode 16.0.0**.
 
-Every glyph ships with full developer metadata: character, official Unicode name, code point (`U+XXXX`), decimal value, HTML entities (decimal + hex), CSS escape, JS escape, Unicode category/block and curated search keywords. Country flags are included as regional-indicator emoji sequences (`🇺🇸`).
+Every glyph ships with full developer metadata: character, official Unicode name, code point (`U+XXXX`), decimal value, HTML entities (decimal + hex), CSS escape, JS escape, Unicode category, script, block and curated search keywords. Country flags are included as regional-indicator emoji sequences (`🇺🇸`).
 
 ### Regenerating the dataset
 
 ```bash
-bun run generate:icons                          # use the pinned Unicode version
-bun run generate:icons --force                  # re-download the UCD source file
-bun run generate:icons --unicode 17.0.0         # extract from a newer Unicode version
-bun run generate:icons --ucd ./UnicodeData.txt  # use a local/offline UCD file
+bun run generate:icons                              # use the pinned Unicode version
+bun run generate:icons --force                      # re-download the UCD source files
+bun run generate:icons --unicode 17.0.0             # extract from a newer Unicode version
+bun run generate:icons --ucd ./UnicodeData.txt      # use a local/offline UnicodeData file
+bun run generate:icons --scripts ./Scripts.txt      # use a local/offline Scripts file
+bun fmt src/lib/data/icons.json                     # match the committed JSON formatting
 ```
 
-- **Source of truth**: the official UCD [`UnicodeData.txt`](https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt) — downloaded once, then cached in `.cache/` (git-ignored), so repeat runs and CI work offline.
-- **Curation**: the curated block list lives in `scripts/lib/blocks.ts`, hand-picked search synonyms in `scripts/lib/keywords.ts`, and flag regions in `scripts/lib/flags.ts`.
-- **Output**: minified JSON (~1.1 MB raw / ~163 kB gzip). The generated file is committed, so production builds and CI never need network access; Cloudflare serves it compressed. If the payload ever grows too large for a single request, per-block chunked loading can be introduced without changing the pipeline.
-- **Invariants**: `bun test` validates the committed dataset against the pure formatter helpers (`scripts/lib/formats.ts`), so representation drift fails CI.
+- **Source of truth**: the official UCD [`UnicodeData.txt`](https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt) (names, categories) and [`Scripts.txt`](https://www.unicode.org/Public/16.0.0/ucd/Scripts.txt) (script property) — downloaded once, then cached in `.cache/` (git-ignored), so repeat runs and CI work offline.
+- **Curation**: the curated block list lives in `scripts/lib/blocks.ts`, hand-picked search synonyms in `scripts/lib/keywords.ts`, and flag regions in `scripts/lib/flags.ts`. Script ranges are parsed in `scripts/lib/unicode-scripts.ts`.
+- **Output**: formatted JSON (~1.7 MB raw / ~178 kB gzip; the whitespace compresses away). The generated file is committed, so production builds and CI never need network access; Cloudflare serves it compressed. If the payload ever grows too large for a single request, per-block chunked loading can be introduced without changing the pipeline.
+- **Invariants**: `bun test` validates the committed dataset against the pure formatter helpers (`scripts/lib/formats.ts`) and checks every glyph has a script, so representation drift fails CI.
 
 ---
 
@@ -98,7 +100,19 @@ The homepage is a fully offline, client-side directory over the dataset — no n
 - **Keyboard shortcuts**: `/` focuses the search field from anywhere, `Esc` clears it from anywhere (or blurs when already empty).
 - **Category browser**: horizontally scrollable block chips with live counts; the filter composes with search.
 - **Windowed grid**: cards render in 96-glyph pages, grown by an IntersectionObserver sentinel as you scroll, and each card uses `content-visibility: auto` so off-screen tiles skip painting entirely — smooth scrolling with zero virtualization dependencies. Every match stays reachable — no result truncation.
-- **Quick copy**: one click on any glyph copies it in the selected format (Char / HTML / CSS / `U+`), confirmed by a toast — Web Clipboard API with a legacy `execCommand` fallback.
+- **Quick copy**: the 📋 corner button on any glyph copies it in the selected format (Char / HTML / CSS / `U+`), confirmed by a toast — Web Clipboard API with a legacy `execCommand` fallback.
+
+---
+
+## 🔬 Glyph Inspector & Developer Tooling
+
+Clicking any glyph opens an accessible slide-over inspector (native `<dialog>` — focus trap, `Esc` and focus restoration included).
+
+- **High-contrast preview**: the glyph rendered at display size on an inverted surface.
+- **Cross-font rendering grid**: the same glyph in System UI, Sans-Serif, Serif and Monospace stacks, so you can spot missing-glyph fallbacks before shipping.
+- **Every developer format, one click away**: character, decimal & hex HTML entities, CSS escape, JavaScript escape, URL-encoded UTF-8, and the `U+` code point.
+- **Unicode attributes**: category (code + friendly label), block, script, decimal and hex values.
+- **Favorites & recent copies**: persisted in `localStorage` (`utf8:favorites`, `utf8:recents`), capped at 24 recent copies, and browsable from the All / ★ Favorites / 🕘 Recent switcher above the grid — no account, no server.
 
 ---
 
@@ -109,7 +123,7 @@ Tracked in epic issue [#1](https://github.com/amr3k/open-utf8-icons/issues/1):
 - [x] **Phase 1: Project Scaffolding & Toolchain**
 - [x] **Phase 2: Unicode Dataset Extraction Pipeline**
 - [x] **Phase 3: Core Directory & Search Interface**
-- [ ] **Phase 4: Glyph Inspector & Developer Tooling**
+- [x] **Phase 4: Glyph Inspector & Developer Tooling**
 - [ ] **Phase 5: PWA & Offline Support**
 - [ ] **Phase 6: Branding, SEO & Social Assets**
 - [ ] **Phase 7: Deployment & CI/CD**
