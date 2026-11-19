@@ -1,10 +1,11 @@
 <script lang="ts">
   /**
-   * Instant search input (Phase 3): `/` focuses from anywhere, `Esc` clears
-   * from anywhere outside a modal dialog, ✕ gives a touch-friendly clear.
-   * Also hosts the quick-copy format pills and a live tabular-nums match
-   * count.
+   * Unified search + quick-copy toolbar. `/` focuses from anywhere, `Esc`
+   * clears outside a modal dialog, ✕ gives a touch-friendly clear. The
+   * footer row hosts the page-supplied collection switcher, the quick-copy
+   * formats, and a live tabular-nums match count — all in one surface.
    */
+  import type { Snippet } from "svelte";
   import { COPY_FORMATS, type CopyFormat } from "#lib/copy.js";
   import PillButton from "#lib/components/PillButton.svelte";
   import { formatCount } from "#lib/format.js";
@@ -15,16 +16,17 @@
     query?: string;
     copyFormat?: CopyFormat;
     status?: SearchStatus;
+    /** Collection switcher (and any contextual actions) from the page. */
+    actions?: Snippet;
   }
 
   let {
     query = $bindable(""),
     copyFormat = $bindable("char"),
     status = { matchCount: 0, totalCount: 0, filtersActive: false },
+    actions,
   }: Props = $props();
 
-  // `bind:this` is deliberate here: the `/` shortcut needs the live input
-  // reference to focus imperatively — an attachment cannot replace this.
   let input: HTMLInputElement | null = $state(null);
 
   function focusSearch() {
@@ -32,18 +34,10 @@
     input?.select();
   }
 
-  /**
-   * Window-level shortcuts: `/` focuses the field (unless the user is
-   * already typing somewhere), `Esc` clears the query — including after
-   * clicking a glyph or a filter chip. Both are suspended whenever a modal
-   * dialog owns the keyboard.
-   */
   function handleShortcut(event: KeyboardEvent) {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
 
     const target = event.target;
-    // A modal dialog (the glyph inspector) owns the keyboard: Esc must close
-    // the panel instead of clearing the search behind it.
     if (target instanceof Element && target.closest("dialog[open]") !== null) {
       return;
     }
@@ -68,8 +62,6 @@
   }
 
   function handleKeydown(event: KeyboardEvent) {
-    // The window handler clears a non-empty query; this local handler adds
-    // the blur-on-empty behaviour while the input itself is focused.
     if (event.key === "Escape" && query === "") {
       input?.blur();
     }
@@ -83,11 +75,14 @@
 
 <svelte:window onkeydown={handleShortcut} />
 
-<div class="flex flex-col gap-3">
-  <div class="relative">
+<section
+  class="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(9,9,11,0.04),0_8px_24px_-16px_rgba(9,9,11,0.18)] transition-[border-color,box-shadow] duration-150 has-[:focus-visible]:border-sky-500/60 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-sky-500/15 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
+  aria-label="Search and quick-copy controls"
+>
+  <div class="flex items-center gap-3 px-4 py-3 sm:px-5">
     <span
-      class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base text-zinc-500 dark:text-zinc-400"
-      aria-hidden="true">🔍</span
+      class="pointer-events-none text-lg leading-none text-zinc-400 dark:text-zinc-500"
+      aria-hidden="true">⌕</span
     >
     <input
       bind:this={input}
@@ -100,14 +95,14 @@
       placeholder="Search glyphs — name, keyword, or code point"
       aria-label="Search glyphs by name, keyword, or code point"
       aria-keyshortcuts="/"
-      class="h-12 w-full rounded-2xl border border-zinc-200 bg-white pl-11 pr-14 text-sm text-zinc-900 shadow-2xs outline-none transition placeholder:text-zinc-500 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-400 dark:[&::-webkit-search-cancel-button]:hidden"
+      class="min-w-0 flex-1 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:[&::-webkit-search-cancel-button]:hidden"
     />
-    <div class="absolute right-3 top-1/2 -translate-y-1/2">
+    <div class="flex shrink-0 items-center">
       {#if query !== ""}
         <button
           type="button"
           onclick={clear}
-          class="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-700 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+          class="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition-[transform,color,background-color] duration-150 ease-out hover:bg-zinc-100 hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
           aria-label="Clear search"
         >
           <span class="text-sm leading-none" aria-hidden="true">✕</span>
@@ -121,30 +116,49 @@
     </div>
   </div>
 
-  <div class="flex flex-wrap items-center justify-between gap-2">
-    <div class={PILL_GROUP} role="group" aria-label="Quick copy format">
-      {#each COPY_FORMATS as format (format.id)}
-        <PillButton
-          active={copyFormat === format.id}
-          onclick={() => (copyFormat = format.id)}
-          title={format.hint}
-        >
-          <span class="tabular-nums">{format.label}</span>
-        </PillButton>
-      {/each}
+  <div
+    class="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-t border-zinc-100 bg-zinc-50/60 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/30"
+  >
+    <div class="flex min-w-0 flex-wrap items-center gap-2">
+      {#if actions}
+        {@render actions()}
+      {/if}
     </div>
 
-    <p
-      class="text-xs tabular-nums text-zinc-500 dark:text-zinc-400"
-      aria-live="polite"
-    >
+    <div class="flex items-center gap-2.5">
+      <span
+        class="hidden text-[11px] font-medium uppercase tracking-wider text-zinc-400 sm:inline dark:text-zinc-500"
+        >Copy as</span
+      >
+      <div class={PILL_GROUP} role="group" aria-label="Quick copy format">
+        {#each COPY_FORMATS as format (format.id)}
+          <PillButton
+            active={copyFormat === format.id}
+            onclick={() => (copyFormat = format.id)}
+            title={format.hint}
+          >
+            <span class="tabular-nums">{format.label}</span>
+          </PillButton>
+        {/each}
+      </div>
+
       {#if status.filtersActive}
-        {formatCount(status.matchCount)}
-        <span class="text-zinc-500 dark:text-zinc-400">of</span>
-        {formatCount(status.totalCount)}
+        <p
+          class="whitespace-nowrap text-xs tabular-nums text-zinc-500 dark:text-zinc-400"
+          aria-live="polite"
+        >
+          {formatCount(status.matchCount)}
+          <span class="text-zinc-400 dark:text-zinc-600">/</span>
+          {formatCount(status.totalCount)}
+        </p>
       {:else}
-        {formatCount(status.totalCount)} glyphs
+        <p
+          class="hidden whitespace-nowrap text-xs tabular-nums text-zinc-500 sm:block dark:text-zinc-400"
+          aria-live="polite"
+        >
+          {formatCount(status.totalCount)} glyphs
+        </p>
       {/if}
-    </p>
+    </div>
   </div>
-</div>
+</section>

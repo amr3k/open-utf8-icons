@@ -1,12 +1,13 @@
 <script lang="ts">
   /**
-   * Collection switcher (Phase 4): All / ★ Favorites / 🕘 Recent. Renders as
-   * the same segmented pill control used elsewhere, with optional counts.
+   * Collection switcher: All / ★ Favorites / ◷ Recent. Lives inside the
+   * toolbar footer alongside the quick-copy formats; optional counts stay
+   * tabular so switching collections never shifts layout.
    */
   import PillButton from "#lib/components/PillButton.svelte";
   import type { LibraryView } from "#lib/library.js";
   import { formatCount } from "#lib/format.js";
-  import { PILL_GROUP } from "#lib/ui.js";
+  import { PILL_GROUP_BARE } from "#lib/ui.js";
 
   interface Props {
     view: LibraryView;
@@ -32,14 +33,14 @@
     },
     {
       id: "recent",
-      icon: "🕘",
+      icon: "◷",
       label: "Recent",
       count: (_, recent) => recent,
     },
   ];
 </script>
 
-<div class={PILL_GROUP} role="group" aria-label="Glyph collection">
+<div class={PILL_GROUP_BARE} role="group" aria-label="Glyph collection">
   {#each VIEWS as item (item.id)}
     {@const count = item.count(favoritesCount, recentCount)}
     <PillButton active={view === item.id} onclick={() => onselect(item.id)}>

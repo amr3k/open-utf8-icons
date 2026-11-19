@@ -202,55 +202,49 @@
   <title>{SITE_TITLE}</title>
 </svelte:head>
 
-<main class="mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-8 sm:px-6 sm:pt-10">
-  <div class="rise-in mb-8">
+<main class="mx-auto w-full max-w-7xl flex-1 px-4 pb-16 pt-10 sm:px-6 sm:pt-14">
+  <div class="rise-in mb-8 max-w-3xl">
     <h2
-      class="text-balance text-3xl font-extrabold leading-[1.1] tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50"
+      class="text-balance text-[2rem] font-extrabold leading-[1.05] tracking-[-0.045em] text-zinc-900 sm:text-5xl lg:text-[3.25rem] dark:text-zinc-50"
     >
       Discover, preview &amp; copy
       <span class="text-sky-600 dark:text-sky-400">native UTF-8</span> glyphs.
     </h2>
-    <p class="mt-2 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
-      {formatCount(dataset.count)} glyphs from Unicode {dataset.unicode}
-      &middot; instant offline search &middot; click a glyph to inspect &middot; press
-      <kbd
-        class="inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 px-1 text-[10px] font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
-        >/</kbd
-      > to search
+    <p class="mt-4 max-w-xl text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+      Instant, offline search across {formatCount(dataset.count)} Unicode {dataset.unicode}
+      glyphs.
     </p>
   </div>
 
   <div class="rise-in" style="animation-delay: 60ms">
-    <SearchBar bind:query bind:copyFormat {status} />
+    <SearchBar bind:query bind:copyFormat {status}>
+      {#snippet actions()}
+        <ViewFilter
+          {view}
+          favoritesCount={library.favorites.length}
+          recentCount={library.recents.length}
+          onselect={selectView}
+        />
+        {#if view === "recent" && library.recents.length > 0}
+          <button
+            type="button"
+            onclick={() => library.clearRecents()}
+            class="inline-flex h-8 items-center gap-1 rounded-full px-2 text-xs font-medium text-zinc-500 transition-[transform,color] duration-150 ease-out hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-zinc-100"
+            aria-label="Clear recent copies"
+          >
+            <span class="text-sm leading-none" aria-hidden="true">✕</span>
+            <span class="hidden sm:inline">Clear recents</span>
+          </button>
+        {/if}
+      {/snippet}
+    </SearchBar>
   </div>
 
-  <div
-    class="rise-in mt-4 flex flex-wrap items-center gap-2"
-    style="animation-delay: 100ms"
-  >
-    <ViewFilter
-      {view}
-      favoritesCount={library.favorites.length}
-      recentCount={library.recents.length}
-      onselect={selectView}
-    />
-    {#if view === "recent" && library.recents.length > 0}
-      <button
-        type="button"
-        onclick={() => library.clearRecents()}
-        class="inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-zinc-500 transition hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-zinc-100"
-      >
-        <span aria-hidden="true">✕</span>
-        <span>Clear recents</span>
-      </button>
-    {/if}
-  </div>
-
-  <div class="rise-in" style="animation-delay: 140ms">
+  <div class="rise-in" style="animation-delay: 100ms">
     <BlockFilter blocks={scopedBlocks} total={viewGlyphs.length} bind:block />
   </div>
 
-  <div class="rise-in" style="animation-delay: 180ms">
+  <div class="rise-in mt-6" style="animation-delay: 140ms">
     <svelte:boundary onerror={reportError}>
       <!-- #key resets the grid's render window when the query/filter changes,
            but not when results merely reorder (e.g. recents after a copy) -->
