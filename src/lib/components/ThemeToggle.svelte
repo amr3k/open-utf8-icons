@@ -39,7 +39,8 @@
         ? "Follow system preference"
         : `Switch to ${label} mode`}
     >
-      <span class="text-sm leading-none lg:mr-1" aria-hidden="true">{icon}</span>
+      <span class="text-sm leading-none lg:mr-1" aria-hidden="true">{icon}</span
+      >
       <span class="hidden lg:inline">{label}</span>
     </PillButton>
   {/each}
