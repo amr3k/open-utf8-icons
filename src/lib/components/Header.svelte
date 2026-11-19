@@ -1,52 +1,61 @@
 <script lang="ts">
   /**
-   * Responsive sticky header (Phase 3): ツ logo, title, theme toggle, and a
-   * repository link — every control is a native UTF-8 glyph, no SVGs.
+   * Responsive sticky header: ツ logo, wordmark, and one compact grouped
+   * control cluster holding the theme modes and the repository link.
+   * Every control is a native UTF-8 glyph — no SVGs, no icon libraries.
    */
   import ThemeToggle from "#lib/components/ThemeToggle.svelte";
 </script>
 
 <header
-  class="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur-md transition-colors dark:border-zinc-800 dark:bg-zinc-950/80"
+  class="sticky top-0 z-10 border-b border-zinc-200/80 bg-white/85 backdrop-blur-xl transition-colors dark:border-zinc-800/80 dark:bg-zinc-950/85"
 >
   <div
-    class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6"
+    class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6"
   >
-    <div class="flex items-center gap-3">
-      <a
-        href="/"
-        class="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-xl font-bold text-sky-400 shadow-xs transition hover:scale-105 active:scale-[0.96] dark:bg-zinc-100 dark:text-sky-600"
-        aria-label="Open UTF-8 icons homepage"
+    <a
+      href="/"
+      class="group flex items-center gap-2.5 rounded-xl"
+      aria-label="Open UTF-8 icons homepage"
+    >
+      <span
+        class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-zinc-900 text-lg font-bold text-sky-400 shadow-[0_1px_2px_rgba(9,9,11,0.18)] transition-transform duration-150 ease-out group-active:scale-[0.96] dark:bg-zinc-100 dark:text-sky-600"
+        aria-hidden="true">ツ</span
       >
-        <span aria-hidden="true">ツ</span>
-      </a>
-      <div>
-        <div class="flex items-center gap-2">
-          <h1
-            class="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
-          >
-            Open UTF-8 icons
-          </h1>
+      <span class="flex flex-col leading-none">
+        <span class="flex items-center gap-1.5">
           <span
-            class="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-700 dark:text-sky-300"
+            class="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
+            >Open UTF-8 icons</span
+          >
+          <span
+            class="rounded-full bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-sky-700 dark:text-sky-300"
             >v0.1.0</span
           >
-        </div>
-        <p class="text-xs text-zinc-500 dark:text-zinc-400">utf8.a3k.me</p>
-      </div>
-    </div>
+        </span>
+        <span class="mt-1 text-[11px] text-zinc-400 dark:text-zinc-500"
+          >utf8.a3k.me</span
+        >
+      </span>
+    </a>
 
-    <div class="flex items-center gap-3">
-      <ThemeToggle />
+    <div
+      class="flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-100/80 p-0.5 dark:border-zinc-800 dark:bg-zinc-900/80"
+    >
+      <ThemeToggle bare />
+      <span
+        class="mx-1 h-4 w-px bg-zinc-200 dark:bg-zinc-700"
+        aria-hidden="true"
+      ></span>
       <a
         href="https://github.com/amr3k/open-utf8-icons"
         target="_blank"
         rel="noreferrer"
-        class="inline-flex h-8 items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 shadow-2xs transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900 active:scale-[0.96] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+        class="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-zinc-600 transition-[transform,color,background-color] duration-150 ease-out hover:bg-white hover:text-zinc-900 active:scale-[0.96] dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
         aria-label="View on GitHub"
       >
         <span class="text-sm leading-none" aria-hidden="true">↗</span>
-        <span>GitHub</span>
+        <span class="hidden lg:inline">GitHub</span>
       </a>
     </div>
   </div>
