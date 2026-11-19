@@ -8,9 +8,12 @@
 export const PILL_GROUP =
   "inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-100 p-0.5 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400";
 
+/** Borderless segmented group that nests inside a larger control surface. */
+export const PILL_GROUP_BARE = "inline-flex items-center gap-0.5";
+
 /** A button inside a segmented pill group. */
 export const PILL_BUTTON =
-  "inline-flex items-center justify-center rounded-full px-2.5 py-1.5 font-medium transition active:scale-[0.96]";
+  "inline-flex items-center justify-center rounded-full px-2.5 py-1.5 font-medium transition-[transform,color,background-color] duration-150 ease-out active:scale-[0.96]";
 
 /** Selected state inside a segmented pill group. */
 export const PILL_ACTIVE =
@@ -21,7 +24,7 @@ export const PILL_INACTIVE = "hover:text-zinc-900 dark:hover:text-zinc-200";
 
 /** Standalone filter chip (block browser). */
 export const CHIP_BASE =
-  "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 font-medium transition active:scale-[0.96]";
+  "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 font-medium transition-[transform,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]";
 
 /** Selected filter chip. */
 export const CHIP_ACTIVE =

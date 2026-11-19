@@ -26,6 +26,12 @@ html {
 }
 
 @layer base {
+  /* Crisper text on macOS without changing the font stack. */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   :where(h1, h2, h3, h4) {
     text-wrap: balance;
   }
@@ -68,6 +74,36 @@ html {
   /* The inspector paints its own animated scrim instead of the UA backdrop. */
   dialog::backdrop {
     background: transparent;
+  }
+}
+
+@layer utilities {
+  /* Category rail: keep the scroll gesture, drop the browser scrollbar. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Soften the first and last chips instead of cutting them mid-glyph. */
+  .edge-fade {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 16px,
+      #000 calc(100% - 16px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 16px,
+      #000 calc(100% - 16px),
+      transparent 100%
+    );
   }
 }
 
