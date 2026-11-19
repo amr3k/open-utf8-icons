@@ -1,0 +1,28 @@
+{
+  // Config used only by `svelte-check`. It mirrors the ignored paths in
+  // .gitignore so generated output never reaches diagnostics.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // The generated wrangler types import .svelte-kit/cloudflare/_worker,
+    // which pulls the whole gitignored build output into the TS program.
+    // The service worker has its own tsconfig, so src never needs this type.
+    "types": ["$app/types", "bun-types"]
+  },
+  "exclude": [
+    "src/service-worker",
+    "node_modules",
+    ".output",
+    ".vercel",
+    ".netlify",
+    ".wrangler",
+    ".svelte-kit",
+    "build",
+    ".cache",
+    ".DS_Store",
+    "Thumbs.db",
+    ".env",
+    ".env.*",
+    "vite.config.js.timestamp-*",
+    "vite.config.ts.timestamp-*"
+  ]
+}

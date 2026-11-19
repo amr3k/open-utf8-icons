@@ -210,7 +210,9 @@
       Discover, preview &amp; copy
       <span class="text-sky-600 dark:text-sky-400">native UTF-8</span> glyphs.
     </h2>
-    <p class="mt-4 max-w-xl text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+    <p
+      class="mt-4 max-w-xl text-sm leading-relaxed text-zinc-500 dark:text-zinc-400"
+    >
       Instant, offline search across {formatCount(dataset.count)} Unicode {dataset.unicode}
       glyphs.
     </p>

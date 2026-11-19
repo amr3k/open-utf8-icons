@@ -13,7 +13,7 @@
     "build": "vite build",
     "preview": "wrangler pages dev .svelte-kit/cloudflare --port 4173",
     "prepare": "svelte-kit sync || echo ''",
-    "check": "wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && bun run check:sw",
+    "check": "wrangler types --check && svelte-kit sync && svelte-check --tsconfig ./tsconfig.check.json && bun run check:sw",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "check:sw": "tsc -p src/service-worker/tsconfig.json --noEmit",
     "gen": "wrangler types",
