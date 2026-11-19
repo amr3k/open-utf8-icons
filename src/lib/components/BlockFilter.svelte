@@ -1,8 +1,8 @@
 <script lang="ts">
   /**
-   * Category/block browser (Phase 3): horizontally scrollable filter chips
-   * with per-block counts, doubling as the "sidebar" on wide screens.
-   * Tapping the active chip (or "All") clears the filter.
+   * Category/block browser: one horizontally scrollable rail with hidden
+   * scrollbar and faded edges. "All blocks" is deliberately distinct from
+   * the collection switcher's "All" above it.
    */
   import type { BlockStat } from "#lib/dataset.js";
   import { formatCount } from "#lib/format.js";
@@ -16,14 +16,13 @@
 
   let { blocks, total, block = $bindable(null) }: Props = $props();
 
-  /** Select a block; tapping the active block again clears the filter. */
   function select(name: string) {
     block = block === name ? null : name;
   }
 </script>
 
 <div
-  class="mt-4 flex gap-2 overflow-x-auto pb-1 text-xs"
+  class="no-scrollbar edge-fade mt-3 flex gap-2 overflow-x-auto pb-1 text-xs"
   role="group"
   aria-label="Filter by Unicode block"
 >
@@ -41,14 +40,15 @@
     >
       <span>{label}</span>
       <span
-        class="tabular-nums {active
-          ? 'text-zinc-300 dark:text-zinc-600'
-          : 'text-zinc-600 dark:text-zinc-400'}">{formatCount(count)}</span
+        class="rounded-full px-1.5 py-0.5 text-[10px] leading-none tabular-nums {active
+          ? 'bg-white/15 text-zinc-200 dark:bg-zinc-900/20 dark:text-zinc-700'
+          : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'}"
+        >{formatCount(count)}</span
       >
     </button>
   {/snippet}
 
-  {@render chip("All", total, block === null, () => (block = null))}
+  {@render chip("All blocks", total, block === null, () => (block = null))}
   {#each blocks as stat (stat.block)}
     {@render chip(stat.block, stat.count, block === stat.block, () =>
       select(stat.block),
