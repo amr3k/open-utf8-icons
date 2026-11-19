@@ -4,7 +4,7 @@
 [![Framework](https://img.shields.io/badge/SvelteKit-Svelte%205-orange?logo=svelte)](https://svelte.dev)
 [![Styling](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com)
 [![Deployed on Cloudflare](https://img.shields.io/badge/Cloudflare_Pages-Worker-F38020?logo=cloudflare)](https://utf8.a3k.me)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: Unlicense](https://img.shields.io/badge/License-Unlicense-blue.svg)](LICENSE)
 
 A fast, lightweight, ad-free, open-source web directory for discovering, previewing, and copying native UTF-8 and Unicode glyphs.
 
@@ -184,4 +184,4 @@ Tracked in epic issue [#1](https://github.com/amr3k/open-utf8-icons/issues/1):
 
 ## 📄 License
 
-[MIT](LICENSE) &copy; 2026 Amr (@amr3k)
+[The Unlicense](LICENSE) — public domain dedication. Free and unencumbered software.
