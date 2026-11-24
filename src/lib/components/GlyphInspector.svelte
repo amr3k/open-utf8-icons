@@ -273,7 +273,6 @@
                 <button
                   type="button"
                   onclick={() => oncopy(activeGlyph, format.id)}
-                  aria-label={`Copy ${format.label} for ${glyph.name}`}
                   title={format.hint}
                   class="group flex w-full items-center justify-between gap-3 px-3 py-2 text-left transition-colors hover:bg-zinc-50 active:bg-zinc-100 dark:hover:bg-zinc-900 dark:active:bg-zinc-800"
                 >
