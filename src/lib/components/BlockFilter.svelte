@@ -42,7 +42,7 @@
       <span
         class="rounded-full px-1.5 py-0.5 text-[10px] leading-none tabular-nums {active
           ? 'bg-white/15 text-zinc-200 dark:bg-zinc-900/20 dark:text-zinc-700'
-          : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'}"
+          : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'}"
         >{formatCount(count)}</span
       >
     </button>

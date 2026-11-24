@@ -33,7 +33,7 @@
             >v0.1.0</span
           >
         </span>
-        <span class="mt-1 text-[11px] text-zinc-400 dark:text-zinc-500"
+        <span class="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400"
           >utf8.a3k.me</span
         >
       </span>

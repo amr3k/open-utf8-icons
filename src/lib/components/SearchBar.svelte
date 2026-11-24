@@ -95,7 +95,7 @@
       placeholder="Search glyphs — name, keyword, or code point"
       aria-label="Search glyphs by name, keyword, or code point"
       aria-keyshortcuts="/"
-      class="min-w-0 flex-1 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:[&::-webkit-search-cancel-button]:hidden"
+      class="min-w-0 flex-1 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-500 dark:text-zinc-100 dark:placeholder:text-zinc-400 dark:[&::-webkit-search-cancel-button]:hidden"
     />
     <div class="flex shrink-0 items-center">
       {#if query !== ""}
@@ -127,7 +127,7 @@
 
     <div class="flex items-center gap-2.5">
       <span
-        class="hidden text-[11px] font-medium uppercase tracking-wider text-zinc-400 sm:inline dark:text-zinc-500"
+        class="hidden text-[11px] font-medium uppercase tracking-wider text-zinc-500 sm:inline dark:text-zinc-400"
         >Copy as</span
       >
       <div class={PILL_GROUP} role="group" aria-label="Quick copy format">
@@ -148,7 +148,7 @@
           aria-live="polite"
         >
           {formatCount(status.matchCount)}
-          <span class="text-zinc-400 dark:text-zinc-600">/</span>
+          <span class="text-zinc-500 dark:text-zinc-400">/</span>
           {formatCount(status.totalCount)}
         </p>
       {:else}
