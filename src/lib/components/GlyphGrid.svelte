@@ -43,8 +43,12 @@
   /** Cards per growth step; a smaller first page keeps the paint light. */
   const PAGE_SIZE = 48;
 
-  /** Start loading the next page this far before the sentinel is on screen. */
-  const PREFETCH_MARGIN = 800;
+  /**
+   * Start loading the next page this far before the sentinel is on screen.
+   * A full page of cards is already >1000px of scroll buffer, so a small
+   * margin keeps the next page out of the initial load/hydration.
+   */
+  const PREFETCH_MARGIN = 240;
 
   /** How many cards are currently mounted. */
   let visibleCount = $state(PAGE_SIZE);
