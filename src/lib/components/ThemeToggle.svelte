@@ -33,7 +33,7 @@
       active={theme.mode === mode}
       onclick={() => theme.setMode(mode)}
       ariaLabel={mode === "system"
-        ? "System preference theme"
+        ? "Auto theme (system preference)"
         : `${label} mode`}
       title={mode === "system"
         ? "Follow system preference"

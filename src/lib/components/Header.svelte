@@ -13,11 +13,7 @@
   <div
     class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6"
   >
-    <a
-      href="/"
-      class="group flex items-center gap-2.5 rounded-xl"
-      aria-label="Open UTF-8 icons homepage"
-    >
+    <a href="/" class="group flex items-center gap-2.5 rounded-xl">
       <span
         class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-zinc-900 text-lg font-bold text-sky-400 shadow-[0_1px_2px_rgba(9,9,11,0.18)] transition-transform duration-150 ease-out group-active:scale-[0.96] dark:bg-zinc-100 dark:text-sky-600"
         aria-hidden="true">ツ</span
@@ -33,10 +29,11 @@
             >v0.1.0</span
           >
         </span>
-        <span class="mt-1 text-[11px] text-zinc-400 dark:text-zinc-500"
+        <span class="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400"
           >utf8.a3k.me</span
         >
       </span>
+      <span class="sr-only"> homepage</span>
     </a>
 
     <div

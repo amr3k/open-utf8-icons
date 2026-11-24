@@ -21,7 +21,7 @@
 
   let copyText = $derived(getCopyText(glyph, format));
   let inspectLabel = $derived(
-    `Inspect ${glyph.name} (${glyph.codepoint})${favorite ? ", favorite" : ""}`,
+    `Inspect ${glyph.name} ${glyph.codepoint}${favorite ? ", favorite" : ""}`,
   );
 </script>
 
